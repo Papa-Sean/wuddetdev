@@ -1,4 +1,43 @@
-import { Post, PostFormData } from '@/app/say-what-up-doe/components/types';
+import {
+	Post,
+	Comment,
+	Author,
+	PostFormData,
+} from '@/app/say-what-up-doe/components/types';
+
+// Add interfaces for API response structures
+interface ApiAuthor {
+	_id?: string;
+	id?: string;
+	name: string;
+	profilePic?: string;
+}
+
+interface ApiComment {
+	_id?: string;
+	id?: string;
+	content: string;
+	author: ApiAuthor;
+	createdAt: string;
+}
+
+interface ApiPost {
+	_id?: string;
+	id?: string;
+	title: string;
+	content: string;
+	author: ApiAuthor;
+	eventDate?: string;
+	location?: string;
+	isPinned?: boolean;
+	comments: ApiComment[];
+	createdAt: string;
+}
+
+interface ApiPostsResponse {
+	posts: ApiPost[];
+	pagination: any;
+}
 
 // Base URL for API requests
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -41,17 +80,19 @@ export const postsApi = {
 		limit = 10
 	): Promise<{ posts: Post[]; pagination: any }> => {
 		try {
-			const data = await postFetch(`/posts?page=${page}&limit=${limit}`);
+			const data = (await postFetch(
+				`/posts?page=${page}&limit=${limit}`
+			)) as ApiPostsResponse;
 
 			// Normalize MongoDB _id to id for consistent usage in the frontend
-			const normalizedPosts = data.posts.map((post) => ({
+			const normalizedPosts = data.posts.map((post: ApiPost) => ({
 				...post,
 				id: post.id || post._id,
 				author: {
 					...post.author,
 					id: post.author.id || post.author._id,
 				},
-				comments: post.comments.map((comment) => ({
+				comments: post.comments.map((comment: ApiComment) => ({
 					...comment,
 					id: comment.id || comment._id,
 					author: {
