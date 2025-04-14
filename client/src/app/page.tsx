@@ -56,14 +56,14 @@ export default function Home() {
 					{!isAuthenticated ? (
 						<Link
 							href='/signup'
-							className='rounded-full bg-primary text-secondary border border-secondary px-6 py-3 text-lg font-medium hover:bg-primary/90 transition-colors'
+							className='max-w-fit rounded-full bg-primary text-secondary border border-secondary px-6 py-3 sm:text-lg text-sm font-medium hover:bg-primary/90 transition-colors'
 						>
 							Join the Community → Sign Up
 						</Link>
 					) : (
 						<Link
 							href='/say-what-up-doe'
-							className='rounded-full bg-primary text-primary-foreground px-6 py-3 text-lg font-medium hover:bg-primary/90 transition-colors'
+							className='max-w-fit rounded-full bg-primary text-primary-foreground px-6 py-3 sm:text-lg text-xs font-medium hover:bg-primary/90 transition-colors'
 						>
 							Check the latest events → Say What Up Doe
 						</Link>
