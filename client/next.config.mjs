@@ -9,11 +9,16 @@ const nextConfig = {
 		// Temporarily ignore ESLint errors during development
 		ignoreDuringBuilds: true,
 	},
-	// Add static export configuration
+	// Static export configuration
 	output: 'export',
-	// Disable image optimization since it requires a server component
+	// Disable image optimization since it requires server component
 	images: {
 		unoptimized: true,
+	},
+	// Ensure no API routes are included in the build
+	experimental: {
+		// This helps avoid errors with missing API routes
+		appDocumentPreloading: false,
 	},
 	// This ensures the app works with a sub-path if needed
 	basePath: '',
