@@ -80,4 +80,16 @@ export const contactApi = {
 			throw error;
 		}
 	},
+
+	// Delete a message (admin only)
+	deleteMessage: async (messageId: string): Promise<void> => {
+		try {
+			await contactFetch(`/admin/contact-messages/${messageId}`, {
+				method: 'DELETE',
+			});
+		} catch (error) {
+			console.error('Delete message error:', error);
+			throw error;
+		}
+	},
 };

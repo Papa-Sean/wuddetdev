@@ -10,6 +10,11 @@ interface GuestFormProps {
 	) => void;
 	onSubmit: (e: React.FormEvent) => void;
 	theme: 'primary' | 'secondary' | 'accent';
+	status?: {
+		isSubmitting: boolean;
+		isSuccess: boolean;
+		error: string;
+	};
 }
 
 export function GuestForm({
@@ -29,13 +34,10 @@ export function GuestForm({
 		setSubmitSuccess(false);
 
 		try {
-			// Submit the message to the server
-			await contactApi.sendGuestMessage(formData);
-			setSubmitSuccess(true);
-
-			// If onSubmit prop exists, call it (for parent component integration)
+			// Let the parent component handle the API call
 			if (onSubmit) {
-				onSubmit(e);
+				await onSubmit(e);
+				setSubmitSuccess(true);
 			}
 		} catch (error) {
 			console.error('Error submitting message:', error);

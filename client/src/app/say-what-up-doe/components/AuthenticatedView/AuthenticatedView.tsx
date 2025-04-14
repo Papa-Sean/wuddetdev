@@ -27,6 +27,7 @@ interface AuthenticatedViewProps {
 	deletePost: (postId: string) => void;
 	deleteComment: (commentId: string) => void;
 	toggleResponseStatus: (messageId: string) => void;
+	deleteMessage: (messageId: string) => void;
 	theme: 'primary' | 'secondary' | 'accent';
 }
 
@@ -51,6 +52,7 @@ export function AuthenticatedView({
 	deletePost,
 	deleteComment,
 	toggleResponseStatus,
+	deleteMessage,
 }: AuthenticatedViewProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitError, setSubmitError] = useState('');
@@ -92,6 +94,7 @@ export function AuthenticatedView({
 				<GuestMessagesList
 					messages={guestMessages}
 					toggleResponseStatus={toggleResponseStatus}
+					deleteMessage={deleteMessage}
 				/>
 			)}
 		</>

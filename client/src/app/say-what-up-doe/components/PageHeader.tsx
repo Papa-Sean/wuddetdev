@@ -30,39 +30,33 @@ export function PageHeader({
 					Say What Up Doe
 				</h1>
 				<p className='text-accent mt-2'>
-					Connect with the Detroit developer community
+					{isLoggedIn
+						? 'Connect with the Detroit developer community'
+						: 'Get in touch with the Detroit developer community'}
 				</p>
 			</div>
 
-			{/* Demo toggles - remove in production */}
-			<div className='flex gap-4 p-2 bg-primary border border-secondary rounded-md'>
-				<button
-					onClick={toggleLogin}
-					className={cn(
-						'px-4 py-2 rounded-full transition-all font-medium shadow-sm',
-						isLoggedIn
-							? 'bg-primary text-secondary border border-secondary'
-							: 'bg-primary/50 text-secondary border border-secondary'
-					)}
-				>
-					{isLoggedIn ? 'Logged In' : 'Guest'}
-				</button>
+			{/* Show login link for guests */}
+			{!isLoggedIn && (
+				<div className='flex flex-col gap-2'>
+					<p className='text-sm text-secondary'>
+						Want to join the conversation?
+					</p>
+					<a
+						href='/login'
+						className='px-4 py-2 bg-secondary text-primary rounded-md hover:bg-secondary/90 text-center'
+					>
+						Log in or Sign up
+					</a>
+				</div>
+			)}
 
-				<button
-					onClick={toggleAdmin}
-					className={cn(
-						'px-4 py-2 rounded-full transition-all font-medium shadow-sm',
-						isAdmin
-							? 'bg-primary text-secondary border border-secondary'
-							: 'bg-primary text-secondary border border-secondary',
-						!isLoggedIn &&
-							'bg-primary text-primary border border-primary cursor-not-allowed'
-					)}
-					disabled={!isLoggedIn}
-				>
-					{isAdmin ? 'Admin' : 'Member'}
-				</button>
-			</div>
+			{/* Demo toggles or admin controls if logged in */}
+			{isLoggedIn && (
+				<div className='flex gap-4 p-2 bg-primary border border-secondary rounded-md'>
+					{/* Your existing controls */}
+				</div>
+			)}
 		</div>
 	);
 }

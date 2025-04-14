@@ -32,7 +32,8 @@ export interface Post {
 }
 
 export interface GuestMessage {
-	id: string;
+	id?: string;
+	_id?: string;
 	name: string;
 	email: string;
 	message: string;

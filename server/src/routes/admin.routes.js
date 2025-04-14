@@ -48,6 +48,31 @@ router.put(
 	}
 );
 
+// Add this route to handle message deletion
+router.delete(
+	'/contact-messages/:id',
+	authenticateToken,
+	isAdmin,
+	async (req, res, next) => {
+		try {
+			const message = await ContactMessage.findByIdAndDelete(
+				req.params.id
+			);
+
+			if (!message) {
+				return res.status(404).json({
+					error: 'NotFoundError',
+					message: 'Message not found',
+				});
+			}
+
+			res.status(204).end();
+		} catch (error) {
+			next(error);
+		}
+	}
+);
+
 // Get all users
 router.get('/users', authenticateToken, isAdmin, async (req, res, next) => {
 	try {

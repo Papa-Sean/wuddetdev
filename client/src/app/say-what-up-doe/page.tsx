@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { PageHeader } from './components/PageHeader';
 import { GuestForm } from './components/GuestView/GuestForm';
 import { AuthenticatedView } from './components/AuthenticatedView/AuthenticatedView';
@@ -17,11 +16,6 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function SayWhatUpDoePage() {
-	// Protection - will redirect to login if not authenticated
-	const { isLoading: isRouteLoading } = useProtectedRoute({
-		requiredRole: undefined,
-	});
-
 	// Get auth state from context
 	const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 	const isAdmin = user?.role === 'admin';
@@ -29,7 +23,7 @@ export default function SayWhatUpDoePage() {
 	// Data state
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [guestMessages, setGuestMessages] = useState<GuestMessage[]>([]);
-	const [isDataLoading, setIsDataLoading] = useState(true);
+	const [isDataLoading, setIsDataLoading] = useState(false); // Changed to false for guests
 	const [error, setError] = useState('');
 
 	// UI state
@@ -55,11 +49,17 @@ export default function SayWhatUpDoePage() {
 		email: '',
 		message: '',
 	});
+	const [guestFormStatus, setGuestFormStatus] = useState({
+		isSubmitting: false,
+		isSuccess: false,
+		error: '',
+	});
 
-	// Fetch MongoDB data
+	// Fetch MongoDB data only for authenticated users
 	useEffect(() => {
 		async function fetchData() {
-			if (!isAuthenticated || authLoading || isRouteLoading) return;
+			// Skip if not authenticated or still loading auth status
+			if (!isAuthenticated || authLoading) return;
 
 			setIsDataLoading(true);
 			setError('');
@@ -83,7 +83,7 @@ export default function SayWhatUpDoePage() {
 		}
 
 		fetchData();
-	}, [isAuthenticated, authLoading, isRouteLoading, isAdmin]);
+	}, [isAuthenticated, authLoading, isAdmin]);
 
 	// Event handlers
 	const handleGuestFormChange = (
@@ -93,14 +93,57 @@ export default function SayWhatUpDoePage() {
 		setGuestForm((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleGuestFormSubmit = (e: React.FormEvent) => {
+	const handleGuestFormSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		// Reset form after submission (the actual submission is handled in the GuestForm component)
-		setGuestForm({
-			name: '',
-			email: '',
-			message: '',
+
+		// Simple validation
+		if (
+			!guestForm.name.trim() ||
+			!guestForm.email.trim() ||
+			!guestForm.message.trim()
+		) {
+			return;
+		}
+
+		setGuestFormStatus({
+			isSubmitting: true,
+			isSuccess: false,
+			error: '',
 		});
+
+		try {
+			await contactApi.sendGuestMessage(guestForm);
+
+			// Reset form on success
+			setGuestForm({
+				name: '',
+				email: '',
+				message: '',
+			});
+
+			// Show success message
+			setGuestFormStatus({
+				isSubmitting: false,
+				isSuccess: true,
+				error: '',
+			});
+
+			// Reset success message after 5 seconds
+			setTimeout(() => {
+				setGuestFormStatus((prev) => ({ ...prev, isSuccess: false }));
+			}, 5000);
+		} catch (err) {
+			console.error('Error submitting guest message:', err);
+
+			setGuestFormStatus({
+				isSubmitting: false,
+				isSuccess: false,
+				error:
+					err instanceof Error
+						? err.message
+						: 'Failed to send message',
+			});
+		}
 	};
 
 	const handleNewPostFormChange = (
@@ -237,9 +280,26 @@ export default function SayWhatUpDoePage() {
 		}
 	};
 
-	// Show loading state
-	const isLoading =
-		isRouteLoading || authLoading || !isAuthenticated || isDataLoading;
+	const deleteMessage = async (messageId: string) => {
+		try {
+			// Call the API to delete the message
+			await contactApi.deleteMessage(messageId);
+
+			// Update local state to remove the deleted message
+			setGuestMessages((prev) =>
+				prev.filter(
+					(message) =>
+						message.id !== messageId && message._id !== messageId
+				)
+			);
+		} catch (err) {
+			console.error('Error deleting message:', err);
+			// Display error to user if needed
+		}
+	};
+
+	// Show loading state - only check authentication loading if user is logged in
+	const isLoading = authLoading || (isAuthenticated && isDataLoading);
 
 	if (isLoading) {
 		return (
@@ -284,6 +344,26 @@ export default function SayWhatUpDoePage() {
 					theme={pageTheme}
 				/>
 
+				{!isAuthenticated && (
+					<div className='mb-8 text-center max-w-2xl mx-auto'>
+						<h2 className='text-2xl font-bold mb-2'>
+							Welcome to our Community!
+						</h2>
+						<p className='text-muted-foreground'>
+							Fill out the form below to get in touch with our
+							admin team. Interested in seeing community posts and
+							events?{' '}
+							<a
+								href='/login'
+								className='text-primary hover:underline'
+							>
+								Sign up for an account
+							</a>{' '}
+							to join the conversation.
+						</p>
+					</div>
+				)}
+
 				{isAuthenticated ? (
 					<AuthenticatedView
 						isAdmin={isAdmin}
@@ -305,6 +385,7 @@ export default function SayWhatUpDoePage() {
 						togglePinPost={togglePinPost}
 						deletePost={deletePost}
 						toggleResponseStatus={toggleResponseStatus}
+						deleteMessage={deleteMessage}
 						theme={pageTheme}
 					/>
 				) : (
@@ -313,6 +394,7 @@ export default function SayWhatUpDoePage() {
 						onChange={handleGuestFormChange}
 						onSubmit={handleGuestFormSubmit}
 						theme={pageTheme}
+						status={guestFormStatus}
 					/>
 				)}
 			</div>
