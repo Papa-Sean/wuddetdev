@@ -28,8 +28,23 @@ app.use(helmet()); // Security headers
 // Update CORS configuration to allow credentials
 app.use(
 	cors({
-		origin: config.server.corsOrigin,
-		credentials: true, // Add this line to handle credentials
+		origin: function (origin, callback) {
+			// Allow requests with no origin (like mobile apps, curl requests)
+			const allowedOrigins = Array.isArray(config.server.corsOrigin)
+				? config.server.corsOrigin
+				: [config.server.corsOrigin];
+
+			// For development, allow requests with no origin (local requests)
+			if (!origin) return callback(null, true);
+
+			if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+				callback(null, true);
+			} else {
+				console.log('Blocked by CORS: ', origin);
+				callback(new Error('Not allowed by CORS'));
+			}
+		},
+		credentials: true,
 		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 		allowedHeaders: ['Content-Type', 'Authorization'],
 	})

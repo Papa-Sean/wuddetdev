@@ -11,12 +11,18 @@ const config = {
 		port: process.env.PORT || 3001,
 		nodeEnv: process.env.NODE_ENV || 'development',
 		apiPrefix: '/api',
-		corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+		corsOrigin: process.env.CORS_ORIGIN
+			? process.env.CORS_ORIGIN.split(',')
+			: [
+					'http://localhost:3000',
+					'http://172.237.129.183',
+					'https://your-domain.com',
+			  ],
 	},
 
 	// Database settings
 	db: {
-		uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/wuddevdet',
+		uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/wuddetdev',
 		options: {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
@@ -26,8 +32,7 @@ const config = {
 	// Authentication settings
 	auth: {
 		jwtSecret:
-			process.env.JWT_SECRET ||
-			'your_jwt_secret_key_change_in_production',
+			process.env.JWT_SECRET || 'your_secret_key_change_in_production',
 		jwtExpiration: process.env.JWT_EXPIRATION || '24h',
 		saltRounds: 10,
 	},
