@@ -22,6 +22,7 @@ interface PostsListProps {
 	handleCommentSubmit: (postId: string) => void;
 	togglePinPost: (postId: string) => void;
 	deletePost: (postId: string) => void;
+	deleteComment: (postId: string, commentId: string) => void; // Add this line
 }
 
 export function PostsList({
@@ -40,6 +41,7 @@ export function PostsList({
 	handleCommentSubmit,
 	togglePinPost,
 	deletePost,
+	deleteComment,
 }: PostsListProps) {
 	return (
 		<div>
@@ -85,6 +87,7 @@ export function PostsList({
 							onCommentSubmit={handleCommentSubmit}
 							onTogglePin={togglePinPost}
 							onDelete={deletePost}
+							onDeleteComment={deleteComment} // Add this line to pass the prop
 						/>
 					))}
 			</div>

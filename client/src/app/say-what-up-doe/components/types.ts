@@ -7,7 +7,8 @@ export interface Author {
 }
 
 export interface Comment {
-	id: string;
+	id?: string;
+	_id?: string; // Add this line to allow MongoDB's _id
 	content: string;
 	author: Author;
 	createdAt: string;
@@ -18,12 +19,7 @@ export interface Post {
 	_id?: string;
 	title: string;
 	content: string;
-	author: {
-		_id?: string;
-		id?: string;
-		name: string;
-		profilePic?: string;
-	};
+	author: Author; // Use the Author interface instead of inlining it
 	eventDate?: string;
 	location?: string;
 	isPinned?: boolean;

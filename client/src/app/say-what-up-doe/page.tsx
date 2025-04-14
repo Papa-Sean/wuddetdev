@@ -387,6 +387,7 @@ export default function SayWhatUpDoePage() {
 						toggleResponseStatus={toggleResponseStatus}
 						deleteMessage={deleteMessage}
 						theme={pageTheme}
+						deleteComment={deleteComment}
 					/>
 				) : (
 					<GuestForm

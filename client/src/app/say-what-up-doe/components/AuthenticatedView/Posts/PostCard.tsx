@@ -15,6 +15,7 @@ interface PostCardProps {
 	onCommentSubmit: (postId: string) => void;
 	onTogglePin: (postId: string) => void;
 	onDelete: (postId: string) => void;
+	onDeleteComment: (postId: string, commentId: string) => void;
 }
 
 export function PostCard({
@@ -27,10 +28,13 @@ export function PostCard({
 	onCommentSubmit,
 	onTogglePin,
 	onDelete,
+	onDeleteComment,
 }: PostCardProps) {
 	// Get current user to check ownership
 	const { user } = useAuth();
-	const postId = post.id || post._id;
+
+	// Fix: Ensure postId is always a string, never undefined
+	const postId = (post.id || post._id || '').toString();
 
 	// Check if user is the author of this post
 	const isAuthor = user?.id === (post.author.id || post.author._id);
@@ -141,6 +145,7 @@ export function PostCard({
 					onCommentSubmit={handleCommentSubmit}
 					currentUserId={user?.id}
 					isAdmin={isAdmin}
+					onDeleteComment={onDeleteComment}
 				/>
 			</div>
 		</div>

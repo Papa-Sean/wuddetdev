@@ -10,8 +10,8 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, isAdmin, onDelete }: ProjectCardProps) {
-	// Use a safe way to get project ID
-	const projectId = project.id || project._id;
+	// Fix: Provide a default string value if both id and _id are undefined
+	const projectId = (project.id || project._id || 'unknown-id').toString();
 
 	return (
 		<div className='bg-card rounded-lg overflow-hidden shadow-lg transition-transform hover:shadow-xl'>

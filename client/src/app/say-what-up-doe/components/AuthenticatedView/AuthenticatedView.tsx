@@ -25,7 +25,7 @@ interface AuthenticatedViewProps {
 	handleCommentSubmit: (postId: string) => void;
 	togglePinPost: (postId: string) => void;
 	deletePost: (postId: string) => void;
-	deleteComment: (commentId: string) => void;
+	deleteComment: (postId: string, commentId: string) => void; // Fix the parameter types
 	toggleResponseStatus: (messageId: string) => void;
 	deleteMessage: (messageId: string) => void;
 	theme: 'primary' | 'secondary' | 'accent';

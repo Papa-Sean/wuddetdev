@@ -48,53 +48,53 @@ export function CommentSection({
 				<div className='space-y-4 mb-4'>
 					{comments.map((comment) => {
 						// Get the proper comment ID
-						const commentId = comment.id || comment._id;
+						const commentId = comment.id || comment._id || '';
 
 						// Check if user can delete this comment
 						const isCommentAuthor =
-							currentUserId ===
-							(comment.author.id || comment.author._id);
-						const canDeleteComment = isAdmin || isCommentAuthor;
+							currentUserId &&
+							(comment.author.id === currentUserId ||
+								comment.author._id === currentUserId);
 
 						return (
 							<div
 								key={commentId}
-								className='bg-muted/30 p-3 rounded-md'
+								className='border-b last:border-b-0 py-3'
 							>
+								{/* Comment content */}
 								<div className='flex justify-between'>
-									<div className='flex items-center gap-2 mb-1'>
-										<div className='w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs'>
-											{comment.author.name.charAt(0)}
-										</div>
-										<span className='font-medium text-sm'>
+									<div>
+										<span className='font-medium'>
 											{comment.author.name}
 										</span>
-									</div>
-									<div className='flex items-center'>
-										<span className='text-xs text-muted-foreground'>
+										<span className='text-muted-foreground text-xs ml-2'>
 											{new Date(
 												comment.createdAt
-											).toLocaleDateString()}
+											).toLocaleString()}
 										</span>
-
-										{/* Delete button for comment */}
-										{canDeleteComment &&
-											onDeleteComment && (
-												<button
-													onClick={() =>
-														handleDeleteComment(
-															commentId
-														)
-													}
-													className='ml-2 p-1 text-red-500 hover:bg-muted/50 rounded-full'
-													title='Delete comment'
-												>
-													<Trash2 size={14} />
-												</button>
-											)}
 									</div>
+
+									{/* Delete comment button (for admin or comment author) */}
+									{(isAdmin || isCommentAuthor) && (
+										<button
+											onClick={() => {
+												// Add null check here
+												if (commentId) {
+													handleDeleteComment(
+														commentId
+													);
+												}
+											}}
+											className='ml-2 p-1 text-red-500 hover:bg-muted/50 rounded-full'
+											title='Delete comment'
+										>
+											<Trash2 size={14} />
+										</button>
+									)}
 								</div>
-								<p className='text-sm'>{comment.content}</p>
+								<p className='mt-1 text-sm'>
+									{comment.content}
+								</p>
 							</div>
 						);
 					})}

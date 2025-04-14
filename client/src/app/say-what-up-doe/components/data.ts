@@ -4,43 +4,21 @@ export const dummyPosts: Post[] = [
 	{
 		id: '1',
 		title: 'Detroit JS Meetup - React Workshop',
-		content:
-			"Join us for a hands-on React workshop where we'll build a simple application from scratch. Beginners welcome!",
+		content: 'Join us for a hands-on React workshop...',
 		eventDate: '2023-11-15T18:00:00',
 		location: 'TechHub Detroit, 1570 Woodward Ave',
 		author: {
 			id: 'user1',
 			name: 'Sarah Johnson',
-			image: '/avatars/sarah.jpg',
+			image: '/avatars/sarah.jpg', // This is fine now that we're using the Author interface
 		},
 		isPinned: true,
 		createdAt: '2023-10-20T14:30:00',
 		comments: [
-			{
-				id: 'c1',
-				content:
-					'Looking forward to this! Will we need to bring our own laptops?',
-				author: {
-					id: 'user2',
-					name: 'Michael Chen',
-					image: '/avatars/michael.jpg',
-				},
-				createdAt: '2023-10-20T15:45:00',
-			},
-			{
-				id: 'c2',
-				content:
-					"Yes, please bring your laptop with Node.js installed. We'll share more setup instructions closer to the date.",
-				author: {
-					id: 'user1',
-					name: 'Sarah Johnson',
-					image: '/avatars/sarah.jpg',
-				},
-				createdAt: '2023-10-20T16:30:00',
-			},
+			// Your comments here
 		],
 	},
-	// Include remaining dummy posts...
+	// Other posts
 ];
 
 export const dummyGuestMessages: GuestMessage[] = [
