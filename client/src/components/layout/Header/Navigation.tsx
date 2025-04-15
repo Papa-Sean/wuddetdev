@@ -67,7 +67,7 @@ export function Navigation({
 					<Link href='/login'>
 						<Button
 							variant='outline'
-							className='rounded-full'
+							className='rounded-full hover:bg-primary/10'
 						>
 							Log In
 						</Button>

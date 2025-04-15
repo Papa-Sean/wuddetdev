@@ -44,7 +44,7 @@ export function PageHeader({
 					</p>
 					<a
 						href='/login'
-						className='px-4 py-2 bg-secondary text-primary rounded-md hover:bg-secondary/90 text-center'
+						className='px-4 py-2 bg-secondary text-primary rounded-md hover:bg-secondary/10 text-center'
 					>
 						Log in or Sign up
 					</a>
