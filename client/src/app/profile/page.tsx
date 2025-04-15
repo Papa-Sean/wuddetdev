@@ -235,7 +235,8 @@ export default function ProfilePage() {
 								</p>
 								<p className='text-muted-foreground flex items-center justify-center md:justify-start gap-1 mt-1'>
 									<Calendar size={14} />
-									Member since {formatDate(user.createdAt)}
+									Member since{' '}
+									{formatDate(user.joinedAt || '')}
 								</p>
 							</div>
 						</div>

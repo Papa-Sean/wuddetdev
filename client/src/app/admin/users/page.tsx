@@ -160,7 +160,7 @@ export default function UsersPage() {
 
 				// Using mock data for development
 				setTimeout(() => {
-					setUsers(mockUsers);
+					setUsers(mockUsers as User[]);
 					setIsLoading(false);
 				}, 800); // Simulate loading
 			} catch (err) {

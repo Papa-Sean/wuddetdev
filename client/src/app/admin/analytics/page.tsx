@@ -651,7 +651,14 @@ export default function AnalyticsPage() {
 											</thead>
 											<tbody>
 												{data.topPages.map(
-													(page, i) => (
+													(
+														page: {
+															page: string;
+															views: number;
+															avgTimeOnPage: number;
+														},
+														i: number
+													) => (
 														<tr
 															key={i}
 															className='border-b border-border/50 last:border-0'
@@ -814,7 +821,13 @@ export default function AnalyticsPage() {
 											</p>
 
 											{data.locations.map(
-												(location, i) => {
+												(
+													location: {
+														region: string;
+														visits: number;
+													},
+													i: number
+												) => {
 													const percentage =
 														(location.visits /
 															data.totals
