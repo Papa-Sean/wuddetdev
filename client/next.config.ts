@@ -1,8 +1,7 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+const nextConfig = {
 	output: 'export',
-	// Prevent Next.js from trying to process API routes at all
 	typescript: {
 		ignoreBuildErrors: true,
 	},
@@ -10,13 +9,7 @@ const nextConfig: NextConfig = {
 		ignoreDuringBuilds: true,
 	},
 	distDir: '.next',
-	// Add this to explicitly tell Next.js which files to include/exclude
-	experimental: {
-		// This tells Next.js to skip API routes during build
-		outputFileTracingExcludes: {
-			'*': ['./src/app/api/**/*'],
-		},
-	},
-};
+	// Remove experimental config section entirely
+} as NextConfig;
 
 export default nextConfig;
