@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import { BackgroundDecoration } from '@/components/layout/BackgroundDecoration';
@@ -18,9 +18,42 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "wuddevdet | Detroit's Web Dev Hub",
+	title: {
+		default: "wuddevdet | Detroit's Web Dev Hub",
+		template: '%s | wuddevdet',
+	},
 	description:
 		'Connect with Michigan developers, share events, and grow together.',
+	manifest: '/manifest.json',
+	metadataBase: new URL('https://wuddevdet.com'),
+	openGraph: {
+		type: 'website',
+		siteName: 'wuddevdet',
+		title: "wuddevdet | Detroit's Web Dev Hub",
+		description:
+			'Connect with Michigan developers, share events, and grow together.',
+		images: [
+			{
+				url: '/og-image.jpg',
+				width: 1200,
+				height: 630,
+				alt: "wuddevdet - Detroit's Web Dev Hub",
+			},
+		],
+	},
+	twitter: {
+		card: 'summary_large_image',
+		title: "wuddevdet | Detroit's Web Dev Hub",
+		description:
+			'Connect with Michigan developers, share events, and grow together.',
+		images: ['/og-image.jpg'],
+	},
+};
+
+export const viewport: Viewport = {
+	themeColor: '#59461E',
+	width: 'device-width',
+	initialScale: 1,
 };
 
 export default function RootLayout({
