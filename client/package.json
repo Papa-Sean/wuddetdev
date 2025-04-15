@@ -4,7 +4,9 @@
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
-		"build": "tsc --project tsconfig.build.json && next build",
+		"prebuild": "node prebuild.js",
+		"build": "npm run prebuild && tsc --project tsconfig.build.json && next build",
+		"postbuild": "node -e \"require('fs').existsSync('./src/app/api_temp') && require('fs').renameSync('./src/app/api_temp', './src/app/api')\"",
 		"start": "next start",
 		"lint": "next lint"
 	},

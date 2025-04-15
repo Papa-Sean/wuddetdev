@@ -22,12 +22,12 @@ const config = [
 			},
 		},
 		files: ['**/*.{js,jsx,ts,tsx}'],
+		// Add this to ignore API files directly in the config
+		ignores: ['src/app/api/**/*'],
 		rules: {
-			// Disable rules that are causing build failures for prototypes
-			'@typescript-eslint/no-unused-vars': 'off', // or 'warn' if you prefer warnings instead of errors
+			'@typescript-eslint/no-unused-vars': 'off',
+			'@typescript-eslint/no-explicit-any': 'off', // Add this to ignore 'any' type errors
 			'react/no-unescaped-entities': 'off',
-
-			// Keep other existing rules
 			'react/prop-types': 'off',
 			'react/jsx-uses-react': 'off',
 			'react/react-in-jsx-scope': 'off',

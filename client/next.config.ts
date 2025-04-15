@@ -2,15 +2,21 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
 	output: 'export',
-	// Fix for Next.js 15.3.0 static export with API routes
+	// Prevent Next.js from trying to process API routes at all
 	typescript: {
 		ignoreBuildErrors: true,
 	},
 	eslint: {
 		ignoreDuringBuilds: true,
 	},
-	// Only include files that should be part of the static export
 	distDir: '.next',
+	// Add this to explicitly tell Next.js which files to include/exclude
+	experimental: {
+		// This tells Next.js to skip API routes during build
+		outputFileTracingExcludes: {
+			'*': ['./src/app/api/**/*'],
+		},
+	},
 };
 
 export default nextConfig;
