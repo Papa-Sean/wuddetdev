@@ -5,15 +5,15 @@ export function FooterConnect() {
 			<ul className='space-y-3'>
 				<li>
 					<a
-						href='#'
+						href='https://www.instagram.com/mithumbdrive/'
 						className='hover:text-accent text-secondary transition-colors'
 					>
-						Twitter
+						Instagram
 					</a>
 				</li>
 				<li>
 					<a
-						href='#'
+						href='https://github.com/Papa-Sean'
 						className='hover:text-accent text-secondary transition-colors'
 					>
 						GitHub
@@ -21,7 +21,7 @@ export function FooterConnect() {
 				</li>
 				<li>
 					<a
-						href='#'
+						href='https://www.linkedin.com/in/sean-sugrue-56409580/'
 						className='hover:text-accent text-secondary transition-colors'
 					>
 						LinkedIn
