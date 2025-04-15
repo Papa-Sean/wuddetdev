@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { fetchSiteStats } from '@/lib/api/stats';
 import {
 	TypographyH1,
 	TypographyH2,
@@ -15,6 +17,32 @@ import { Starburst } from '@/components/ui/starburst';
 export default function Home() {
 	const { isAuthenticated, user } = useAuth();
 	const isAdmin = user?.role === 'admin';
+
+	// Add state for site statistics
+	const [stats, setStats] = useState({
+		activeUsers: 100, // Default values
+		events: 25,
+		projects: 50,
+	});
+
+	const [isLoading, setIsLoading] = useState(true);
+
+	// Fetch stats on component mount
+	useEffect(() => {
+		async function loadStats() {
+			try {
+				const data = await fetchSiteStats();
+				setStats(data);
+			} catch (error) {
+				console.error('Failed to load stats:', error);
+				// Keep default values on error
+			} finally {
+				setIsLoading(false);
+			}
+		}
+
+		loadStats();
+	}, []);
 
 	return (
 		<div className='container mx-auto px-4 py-8'>
@@ -258,7 +286,7 @@ export default function Home() {
 					<div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-center'>
 						<div className='bg-card p-6 rounded-lg border-l-4 border-primary'>
 							<p className='text-4xl font-bold text-primary mb-2'>
-								100+
+								{isLoading ? '...' : `${stats.activeUsers}+`}
 							</p>
 							<p className='text-muted-foreground'>
 								Active Members
@@ -266,27 +294,51 @@ export default function Home() {
 						</div>
 						<div className='bg-card p-6 rounded-lg border-l-4 border-secondary'>
 							<p className='text-4xl font-bold text-secondary mb-2'>
-								25+
+								{isLoading ? '...' : `${stats.events}+`}
 							</p>
-							<p className='text-muted-foreground'>
-								Weekly Events
-							</p>
+							<p className='text-muted-foreground'>Events</p>
 						</div>
 						<div className='bg-card p-6 rounded-lg border-l-4 border-accent'>
 							<p className='text-4xl font-bold text-accent mb-2'>
-								50+
+								{isLoading ? '...' : `${stats.projects}+`}
 							</p>
 							<p className='text-muted-foreground'>
 								Projects Showcased
 							</p>
 						</div>
 						<div className='bg-card p-6 rounded-lg border-l-4 border-primary'>
-							<p className='text-4xl font-bold text-primary mb-2'>
-								10+
-							</p>
-							<p className='text-muted-foreground'>
-								Partner Companies
-							</p>
+							<Link
+								href='/say-what-up-doe'
+								className='block hover:opacity-90 transition-opacity'
+							>
+								<p className='text-primary font-bold mb-2 flex items-center justify-center'>
+									<svg
+										xmlns='http://www.w3.org/2000/svg'
+										width='24'
+										height='24'
+										viewBox='0 0 24 24'
+										fill='none'
+										stroke='currentColor'
+										strokeWidth='2'
+										strokeLinecap='round'
+										strokeLinejoin='round'
+										className='mr-2'
+									>
+										<path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+										<circle
+											cx='9'
+											cy='7'
+											r='4'
+										/>
+										<path d='M22 21v-2a4 4 0 0 0-3-3.87' />
+										<path d='M16 3.13a4 4 0 0 1 0 7.75' />
+									</svg>
+									Join Us
+								</p>
+								<p className='text-muted-foreground'>
+									Become a Partner
+								</p>
+							</Link>
 						</div>
 					</div>
 				</div>

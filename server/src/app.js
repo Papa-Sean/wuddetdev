@@ -12,6 +12,7 @@ const projectRoutes = require('./routes/project.routes');
 const postRoutes = require('./routes/post.routes');
 const contactRoutes = require('./routes/contact.routes');
 const adminRoutes = require('./routes/admin.routes');
+const statsRoutes = require('./routes/stats.routes');
 
 // Create Express app
 const app = express();
@@ -60,6 +61,7 @@ app.use(`${config.server.apiPrefix}/projects`, projectRoutes);
 app.use(`${config.server.apiPrefix}/posts`, postRoutes);
 app.use(`${config.server.apiPrefix}/contact`, contactRoutes);
 app.use(`${config.server.apiPrefix}/admin`, adminRoutes);
+app.use(`${config.server.apiPrefix}/stats`, statsRoutes);
 
 // Health check endpoint
 app.get(`${config.server.apiPrefix}/health`, (req, res) => {

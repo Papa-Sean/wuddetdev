@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '../../ui/button';
-import { LogOut } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 
 interface NavigationProps {
 	isLoggedIn: boolean;
@@ -41,6 +41,16 @@ export function Navigation({
 							{userName || 'User'}
 						</span>
 					</div>
+					<Link href='/profile'>
+						<Button
+							variant='outline'
+							size='sm'
+							className='mr-2 flex items-center gap-1'
+						>
+							<User size={16} />
+							Profile
+						</Button>
+					</Link>
 					{isAdmin && (
 						<Link href='/admin'>
 							<Button
