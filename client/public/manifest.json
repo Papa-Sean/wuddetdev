@@ -1,10 +1,14 @@
 {
-	"name": "wuddevdet - Detroit's Web Dev Hub",
+	"name": "WUD-Det-Dev - Detroit's Web Dev Hub",
 	"short_name": "wuddevdet",
 	"description": "Connect with Michigan developers, share events, and grow together.",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#ffffff",
+    "image": "/images/og-image.jpg",
+    "author": "Proper",
+    "publish_date": "2025-04-14",
+    "og_image": "/images/og-image.jpg",
 	"theme_color": "#59461E",
 	"icons": [
 		{
