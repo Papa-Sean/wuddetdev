@@ -49,8 +49,8 @@ export default function UsersPage() {
 				email: user.email,
 				role: user.role as UserRole,
 				location: user.location || 'Not specified',
-				status: (user.status as UserStatus) || 'active', // Default status if not provided
-				lastActive: user.lastActive || null,
+				status: (user.status as UserStatus) || 'active',
+				lastActive: user.lastLogin || user.lastActive || null, // Use lastLogin if available, fall back to lastActive
 				joinDate: user.joinDate || user.createdAt,
 				profileImage: user.profileImage || user.profilePic || '',
 			}));
@@ -259,6 +259,77 @@ export default function UsersPage() {
 		}
 	};
 
+	// Update user role (Make Admin/Remove Admin)
+	const handleUpdateRole = async (
+		userId: string,
+		role: 'admin' | 'member'
+	): Promise<void> => {
+		try {
+			// Show loading feedback in the UI if needed
+			setActionLoading(true);
+
+			// Call API to update the role
+			await userApi.updateUserRole(userId, role);
+
+			// Update local state to reflect the change
+			setUsers((prevUsers) =>
+				prevUsers.map((user) =>
+					user.id === userId ? { ...user, role } : user
+				)
+			);
+		} catch (error) {
+			console.error('Error updating user role:', error);
+			setError('Failed to update user role. Please try again.');
+			throw error; // Re-throw so component can handle it
+		} finally {
+			setActionLoading(false);
+		}
+	};
+
+	// Update user status (Activate/Deactivate)
+	const handleUpdateStatus = async (
+		userId: string,
+		status: 'active' | 'inactive'
+	): Promise<void> => {
+		try {
+			setActionLoading(true);
+			console.log(`Page: Updating user ${userId} status to ${status}`);
+			await userApi.updateUserStatus(userId, status);
+
+			// Update local state with new status
+			setUsers((prevUsers) =>
+				prevUsers.map((user) =>
+					user.id === userId ? { ...user, status } : user
+				)
+			);
+		} catch (error) {
+			console.error('Error updating user status:', error);
+			setError('Failed to update user status. Please try again.');
+			throw error;
+		} finally {
+			setActionLoading(false);
+		}
+	};
+
+	// Delete user handler
+	const handleDeleteUser = async (userId: string): Promise<void> => {
+		try {
+			setActionLoading(true);
+			await userApi.deleteUser(userId);
+
+			// Remove user from the list
+			setUsers((prevUsers) =>
+				prevUsers.filter((user) => user.id !== userId)
+			);
+		} catch (error) {
+			console.error('Error deleting user:', error);
+			setError('Failed to delete user. Please try again.');
+			throw error;
+		} finally {
+			setActionLoading(false);
+		}
+	};
+
 	// Reset all filters
 	const resetFilters = () => {
 		setSearchQuery('');
@@ -332,6 +403,9 @@ export default function UsersPage() {
 						toggleSelectAll={toggleSelectAll}
 						resetFilters={resetFilters}
 						fetchUsers={fetchUsers}
+						onUpdateRole={handleUpdateRole}
+						onUpdateStatus={handleUpdateStatus}
+						onDeleteUser={handleDeleteUser}
 					/>
 
 					{/* Confirmation Dialog */}

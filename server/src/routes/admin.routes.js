@@ -93,8 +93,10 @@ router.delete(
 	isAdmin,
 	async (req, res, next) => {
 		try {
-			const user = await User.findById(req.params.id);
+			const userId = req.params.id;
+			const user = await User.findById(userId);
 
+			// Validation checks here...
 			if (!user) {
 				return res.status(404).json({
 					error: 'NotFoundError',
@@ -110,7 +112,9 @@ router.delete(
 				});
 			}
 
-			await user.remove();
+			// Delete with findByIdAndDelete (returns the deleted document)
+			await User.findByIdAndDelete(userId);
+
 			res.status(204).end();
 		} catch (error) {
 			next(error);
@@ -146,6 +150,47 @@ router.put(
 
 			// Update role
 			user.role = role;
+			await user.save();
+
+			res.json(user);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
+
+// Update user status
+router.put(
+	'/users/:id/status',
+	authenticateToken,
+	isAdmin,
+	async (req, res, next) => {
+		try {
+			const { status } = req.body;
+
+			// Validate status
+			if (
+				!status ||
+				!['active', 'inactive', 'pending', 'banned'].includes(status)
+			) {
+				return res.status(400).json({
+					error: 'ValidationError',
+					message:
+						'Status must be one of: "active", "inactive", "pending", or "banned"',
+				});
+			}
+
+			const user = await User.findById(req.params.id);
+
+			if (!user) {
+				return res.status(404).json({
+					error: 'NotFoundError',
+					message: 'User not found',
+				});
+			}
+
+			// Update status
+			user.status = status;
 			await user.save();
 
 			res.json(user);

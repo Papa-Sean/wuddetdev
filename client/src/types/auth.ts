@@ -10,6 +10,7 @@ export interface User {
 	location?: string;
 	bio?: string;
 	joinedAt?: string;
+	lastLogin?: string; // New field to track last login timestamp
 }
 
 export interface AuthState {

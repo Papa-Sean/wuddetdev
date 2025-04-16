@@ -119,6 +119,10 @@ router.post('/login', async (req, res, next) => {
 		// Generate JWT token
 		const token = generateToken(user);
 
+		// Update the last login timestamp
+		user.lastLogin = new Date();
+		await user.save();
+
 		res.json({
 			user: user.toJSON(),
 			token,

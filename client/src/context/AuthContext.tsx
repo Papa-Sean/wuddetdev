@@ -94,19 +94,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 	// Login function
 	const login = async (credentials: LoginCredentials) => {
-		setIsLoading(true);
-		setError(null);
-
 		try {
-			const { user, token } = await authApi.login(credentials);
+			setIsLoading(true);
+			const response = await authApi.login(credentials);
 
-			// Store authentication data
-			storage.setToken(token);
-			storage.setUser(user);
+			// Set lastLogin in the user object
+			if (response.user) {
+				response.user.lastLogin = new Date().toISOString();
+			}
 
-			// Update state
-			setUser(user);
+			// FIRST save token and user to localStorage
+			localStorage.setItem('auth_token', response.token);
+			localStorage.setItem('user', JSON.stringify(response.user));
+
+			// Update React state
+			setUser(response.user);
 			setIsAuthenticated(true);
+			setError(null);
+
+			// NOW that token is saved, update the server
+			if (response.user) {
+				try {
+					await authApi.updateUser({
+						lastLogin: response.user.lastLogin,
+					});
+				} catch (error) {
+					console.warn('Failed to update lastLogin on server', error);
+				}
+			}
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Login failed';

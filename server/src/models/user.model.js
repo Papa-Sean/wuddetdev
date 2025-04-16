@@ -37,9 +37,18 @@ const userSchema = new mongoose.Schema(
 		profilePic: {
 			type: String,
 		},
+		status: {
+			type: String,
+			enum: ['active', 'inactive', 'pending', 'banned'],
+			default: 'active',
+		},
 		createdAt: {
 			type: Date,
 			default: Date.now,
+		},
+		lastLogin: {
+			type: Date,
+			default: null,
 		},
 	},
 	{
