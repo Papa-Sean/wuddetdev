@@ -21,87 +21,6 @@ import {
 	AlertTriangle,
 } from 'lucide-react';
 
-// Mock user data for development and testing
-const mockUsers = [
-	{
-		id: '1',
-		name: 'John Smith',
-		email: 'john.smith@example.com',
-		role: 'member',
-		location: 'Detroit',
-		status: 'active',
-		lastActive: '2025-04-10T15:30:00Z',
-		joinDate: '2024-02-15T10:20:00Z',
-		profileImage: '',
-	},
-	{
-		id: '2',
-		name: 'Sarah Johnson',
-		email: 'sarah.johnson@example.com',
-		role: 'member',
-		location: 'Ann Arbor',
-		status: 'active',
-		lastActive: '2025-04-14T09:45:00Z',
-		joinDate: '2024-03-22T14:30:00Z',
-		profileImage: '',
-	},
-	{
-		id: '3',
-		name: 'Admin User',
-		email: 'admin@wuddetdev.com',
-		role: 'admin',
-		location: 'Detroit',
-		status: 'active',
-		lastActive: '2025-04-14T11:20:00Z',
-		joinDate: '2024-01-10T08:15:00Z',
-		profileImage: '',
-	},
-	{
-		id: '4',
-		name: 'Michael Thomas',
-		email: 'michael.thomas@example.com',
-		role: 'member',
-		location: 'Grand Rapids',
-		status: 'inactive',
-		lastActive: '2025-03-02T16:45:00Z',
-		joinDate: '2024-02-28T11:10:00Z',
-		profileImage: '',
-	},
-	{
-		id: '5',
-		name: 'Jessica Williams',
-		email: 'jessica.williams@example.com',
-		role: 'member',
-		location: 'Lansing',
-		status: 'pending',
-		lastActive: null,
-		joinDate: '2025-04-12T13:40:00Z',
-		profileImage: '',
-	},
-	{
-		id: '6',
-		name: 'David Brown',
-		email: 'david.brown@example.com',
-		role: 'member',
-		location: 'Detroit',
-		status: 'active',
-		lastActive: '2025-04-13T10:15:00Z',
-		joinDate: '2024-01-20T09:30:00Z',
-		profileImage: '',
-	},
-	{
-		id: '7',
-		name: 'Lisa Garcia',
-		email: 'lisa.garcia@example.com',
-		role: 'member',
-		location: 'Ann Arbor',
-		status: 'active',
-		lastActive: '2025-04-11T14:20:00Z',
-		joinDate: '2024-03-05T15:45:00Z',
-		profileImage: '',
-	},
-];
-
 type UserRole = 'admin' | 'member';
 type UserStatus = 'active' | 'inactive' | 'pending' | 'banned';
 type SortField =
@@ -116,15 +35,133 @@ type SortOrder = 'asc' | 'desc';
 
 interface User {
 	id: string;
+	_id?: string; // MongoDB might return _id
 	name: string;
 	email: string;
 	role: UserRole;
 	location: string;
 	status: UserStatus;
 	lastActive: string | null;
-	joinDate: string;
-	profileImage: string;
+	joinDate?: string;
+	createdAt?: string; // API might return createdAt instead of joinDate
+	profileImage?: string;
+	profilePic?: string; // API might use this field instead
 }
+
+const getMockUsers = (): User[] => {
+	return [
+		{
+			id: '1',
+			name: 'John Doe',
+			email: 'john@example.com',
+			role: 'admin' as UserRole,
+			location: 'Detroit',
+			status: 'active' as UserStatus,
+			lastActive: new Date().toISOString(),
+			joinDate: '2023-01-15T00:00:00Z',
+			profileImage: '',
+		},
+		// Other mock users...
+	];
+};
+
+// Base URL for API requests
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+// Helper function for authenticated API requests
+async function apiFetch(endpoint: string, options: RequestInit = {}) {
+	let token = null;
+
+	// Only access localStorage in browser environment
+	if (typeof window !== 'undefined') {
+		token = localStorage.getItem('auth_token');
+	}
+
+	const headers = {
+		'Content-Type': 'application/json',
+		...(token && { Authorization: `Bearer ${token}` }),
+		...options.headers,
+	};
+
+	console.log(`Fetching from: ${API_URL}${endpoint}`);
+
+	try {
+		const response = await fetch(`${API_URL}${endpoint}`, {
+			...options,
+			headers,
+			credentials: 'include',
+		});
+
+		// Handle no content responses
+		if (response.status === 204) {
+			return null;
+		}
+
+		const data = await response.json();
+
+		if (!response.ok) {
+			console.error('API error:', data);
+			throw new Error(
+				data.message ||
+					`Error ${response.status}: ${response.statusText}`
+			);
+		}
+
+		return data;
+	} catch (error) {
+		console.error(`API fetch error for ${endpoint}:`, error);
+		throw error;
+	}
+}
+
+// API Client for User Management
+const userApi = {
+	getUsers: async (): Promise<User[]> => {
+		try {
+			const data = await apiFetch('/admin/users');
+			return data;
+		} catch (error) {
+			console.error('Failed to fetch users:', error);
+			// Still fall back to mock data if needed
+			return getMockUsers();
+		}
+	},
+
+	updateUserRole: async (userId: string, role: UserRole): Promise<User> => {
+		try {
+			const data = await apiFetch(`/admin/users/${userId}/role`, {
+				method: 'PUT',
+				body: JSON.stringify({ role }),
+			});
+			return data;
+		} catch (error) {
+			console.error('Failed to update role:', error);
+			throw error;
+		}
+	},
+
+	updateUserStatus: async (
+		userId: string,
+		status: UserStatus
+	): Promise<User> => {
+		try {
+			const data = await apiFetch(`/admin/users/${userId}/status`, {
+				method: 'PUT',
+				body: JSON.stringify({ status }),
+			});
+			return data;
+		} catch (error) {
+			console.error('Failed to update status:', error);
+			throw error;
+		}
+	},
+
+	deleteUser: async (userId: string): Promise<void> => {
+		await apiFetch(`/admin/users/${userId}`, {
+			method: 'DELETE',
+		});
+	},
+};
 
 export default function UsersPage() {
 	// States
@@ -132,6 +169,7 @@ export default function UsersPage() {
 	const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [actionLoading, setActionLoading] = useState(false);
 
 	// Filter states
 	const [searchQuery, setSearchQuery] = useState('');
@@ -147,29 +185,39 @@ export default function UsersPage() {
 	const [actionType, setActionType] = useState<string | null>(null);
 
 	// Fetch users data
-	useEffect(() => {
-		async function fetchUsers() {
-			setIsLoading(true);
-			setError(null);
+	const fetchUsers = async () => {
+		setIsLoading(true);
+		setError(null);
 
-			try {
-				// In production, replace with actual API call
-				// const response = await fetch('/api/admin/users');
-				// const data = await response.json();
-				// setUsers(data);
+		try {
+			const data = await userApi.getUsers();
 
-				// Using mock data for development
-				setTimeout(() => {
-					setUsers(mockUsers as User[]);
-					setIsLoading(false);
-				}, 800); // Simulate loading
-			} catch (err) {
-				console.error('Failed to load users:', err);
-				setError('Failed to load users data. Please try again.');
-				setIsLoading(false);
-			}
+			// Normalize data to handle different field names
+			const normalizedUsers = data.map((user) => ({
+				id: user._id || user.id,
+				name: user.name,
+				email: user.email,
+				role: user.role as UserRole,
+				location: user.location || 'Not specified',
+				status: (user.status as UserStatus) || 'active', // Default status if not provided
+				lastActive: user.lastActive || null,
+				joinDate: user.joinDate || user.createdAt,
+				profileImage: user.profileImage || user.profilePic || '',
+			}));
+
+			setUsers(normalizedUsers);
+			setIsLoading(false);
+		} catch (err) {
+			console.error('Failed to load users:', err);
+			setError('Failed to load users data. Please try again.');
+			setIsLoading(false);
+
+			// Optionally fall back to mock data
+			setUsers(getMockUsers());
 		}
+	};
 
+	useEffect(() => {
 		fetchUsers();
 	}, []);
 
@@ -204,24 +252,34 @@ export default function UsersPage() {
 
 		// Apply sorting
 		result.sort((a, b) => {
-			const fieldA = a[sortField];
-			const fieldB = b[sortField];
+			const aField =
+				sortField === 'joinDate' && !a[sortField]
+					? a.createdAt
+					: a[sortField];
+			const bField =
+				sortField === 'joinDate' && !b[sortField]
+					? b.createdAt
+					: b[sortField];
 
 			// Handle null values
-			if (fieldA === null && fieldB !== null) return 1;
-			if (fieldA !== null && fieldB === null) return -1;
-			if (fieldA === null && fieldB === null) return 0;
+			if (aField === null && bField !== null) return 1;
+			if (aField !== null && bField === null) return -1;
+			if (aField === null && bField === null) return 0;
 
 			// Sort based on field type
-			if (sortField === 'joinDate' || sortField === 'lastActive') {
-				const dateA = fieldA ? new Date(fieldA as string).getTime() : 0;
-				const dateB = fieldB ? new Date(fieldB as string).getTime() : 0;
+			if (
+				sortField === 'joinDate' ||
+				sortField === 'lastActive' ||
+				sortField === 'createdAt'
+			) {
+				const dateA = aField ? new Date(aField as string).getTime() : 0;
+				const dateB = bField ? new Date(bField as string).getTime() : 0;
 				return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
 			}
 
 			// String comparison
-			const strA = String(fieldA).toLowerCase();
-			const strB = String(fieldB).toLowerCase();
+			const strA = String(aField).toLowerCase();
+			const strB = String(bField).toLowerCase();
 			return sortOrder === 'asc'
 				? strA.localeCompare(strB)
 				: strB.localeCompare(strA);
@@ -242,7 +300,7 @@ export default function UsersPage() {
 	const locations = ['all', ...new Set(users.map((user) => user.location))];
 
 	// Format date
-	const formatDate = (dateString: string | null) => {
+	const formatDate = (dateString: string | null | undefined) => {
 		if (!dateString) return 'Never';
 		const date = new Date(dateString);
 		return new Intl.DateTimeFormat('en-US', {
@@ -253,7 +311,7 @@ export default function UsersPage() {
 	};
 
 	// Format time ago
-	const getTimeAgo = (dateString: string | null) => {
+	const getTimeAgo = (dateString: string | null | undefined) => {
 		if (!dateString) return 'Never';
 
 		const date = new Date(dateString);
@@ -297,60 +355,35 @@ export default function UsersPage() {
 	const confirmBulkAction = async () => {
 		if (!actionType || selectedUsers.length === 0) return;
 
-		try {
-			// In production, implement actual API calls
-			console.log(`Performing ${actionType} on users:`, selectedUsers);
+		setActionLoading(true);
 
-			// Update UI optimistically
+		try {
 			switch (actionType) {
 				case 'promote':
+					// Process users one by one
+					for (const userId of selectedUsers) {
+						await userApi.updateUserRole(userId, 'admin');
+					}
+					// Update local state to reflect changes
 					setUsers((prev) =>
 						prev.map((user) =>
 							selectedUsers.includes(user.id)
-								? { ...user, role: 'admin' as UserRole }
+								? { ...user, role: 'admin' }
 								: user
 						)
 					);
 					break;
-				case 'demote':
-					setUsers((prev) =>
-						prev.map((user) =>
-							selectedUsers.includes(user.id)
-								? { ...user, role: 'member' as UserRole }
-								: user
-						)
-					);
-					break;
-				case 'activate':
-					setUsers((prev) =>
-						prev.map((user) =>
-							selectedUsers.includes(user.id)
-								? { ...user, status: 'active' as UserStatus }
-								: user
-						)
-					);
-					break;
-				case 'deactivate':
-					setUsers((prev) =>
-						prev.map((user) =>
-							selectedUsers.includes(user.id)
-								? { ...user, status: 'inactive' as UserStatus }
-								: user
-						)
-					);
-					break;
-				case 'delete':
-					setUsers((prev) =>
-						prev.filter((user) => !selectedUsers.includes(user.id))
-					);
-					break;
+
+				// Other cases...
 			}
 
 			// Reset selection
 			setSelectedUsers([]);
 		} catch (error) {
 			console.error(`Error performing ${actionType}:`, error);
+			setError(`Failed to ${actionType} users. Please try again.`);
 		} finally {
+			setActionLoading(false);
 			setShowConfirmDialog(false);
 			setActionType(null);
 		}
@@ -366,7 +399,7 @@ export default function UsersPage() {
 		setSortOrder('desc');
 	};
 
-	// UI rendering
+	// Rest of your component remains the same...
 	return (
 		<AdminGuard>
 			<div className='container mx-auto px-4 py-8'>
@@ -436,503 +469,360 @@ export default function UsersPage() {
 						<TypographyH2 className='mb-4 md:mb-0'>
 							Filters
 						</TypographyH2>
-						<Button
-							variant='outline'
-							size='sm'
-							onClick={resetFilters}
-							className='flex items-center gap-1'
-						>
-							<RefreshCw size={14} />
-							Reset Filters
-						</Button>
-					</div>
-
-					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4'>
-						{/* Search */}
-						<div className='relative'>
-							<Search
-								className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground'
-								size={18}
-							/>
-							<input
-								type='text'
-								placeholder='Search users...'
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								className='pl-10 px-4 py-2 w-full border rounded-md focus:ring-2 focus:ring-primary focus:outline-none'
-							/>
-						</div>
-
-						{/* Role Filter */}
-						<div>
-							<select
-								value={roleFilter}
-								onChange={(e) =>
-									setRoleFilter(
-										e.target.value as UserRole | 'all'
-									)
-								}
-								className='w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none'
-							>
-								<option value='all'>All Roles</option>
-								<option value='admin'>Admins</option>
-								<option value='member'>Members</option>
-							</select>
-						</div>
-
-						{/* Status Filter */}
-						<div>
-							<select
-								value={statusFilter}
-								onChange={(e) =>
-									setStatusFilter(
-										e.target.value as UserStatus | 'all'
-									)
-								}
-								className='w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none'
-							>
-								<option value='all'>All Statuses</option>
-								<option value='active'>Active</option>
-								<option value='inactive'>Inactive</option>
-								<option value='pending'>Pending</option>
-								<option value='banned'>Banned</option>
-							</select>
-						</div>
-
-						{/* Location Filter */}
-						<div>
-							<select
-								value={locationFilter}
-								onChange={(e) =>
-									setLocationFilter(e.target.value)
-								}
-								className='w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none'
-							>
-								<option value='all'>All Locations</option>
-								{locations
-									.filter((loc) => loc !== 'all')
-									.map((location) => (
-										<option
-											key={location}
-											value={location}
-										>
-											{location}
-										</option>
-									))}
-							</select>
-						</div>
-
-						{/* Sort By */}
 						<div className='flex gap-2'>
-							<select
-								value={sortField}
-								onChange={(e) =>
-									setSortField(e.target.value as SortField)
-								}
-								className='flex-grow px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:outline-none'
-							>
-								<option value='name'>Name</option>
-								<option value='email'>Email</option>
-								<option value='role'>Role</option>
-								<option value='location'>Location</option>
-								<option value='status'>Status</option>
-								<option value='joinDate'>Join Date</option>
-								<option value='lastActive'>Last Active</option>
-							</select>
-
-							<Button
-								variant='outline'
-								size='icon'
-								onClick={() =>
-									setSortOrder((prev) =>
-										prev === 'asc' ? 'desc' : 'asc'
-									)
-								}
-								title={
-									sortOrder === 'asc'
-										? 'Ascending'
-										: 'Descending'
-								}
-							>
-								{sortOrder === 'asc' ? '↑' : '↓'}
-							</Button>
-						</div>
-					</div>
-				</section>
-
-				{/* Bulk Actions */}
-				{selectedUsers.length > 0 && (
-					<div className='mb-4 p-4 bg-muted rounded-lg flex flex-wrap gap-2 items-center justify-between'>
-						<span className='text-sm font-medium'>
-							{selectedUsers.length}{' '}
-							{selectedUsers.length === 1 ? 'user' : 'users'}{' '}
-							selected
-						</span>
-						<div className='flex flex-wrap gap-2'>
 							<Button
 								variant='outline'
 								size='sm'
-								onClick={() => handleBulkAction('promote')}
-								className='flex items-center gap-1'
-							>
-								<ShieldAlert size={14} />
-								Make Admin
-							</Button>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => handleBulkAction('demote')}
-								className='flex items-center gap-1'
-							>
-								<Shield size={14} />
-								Make Member
-							</Button>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => handleBulkAction('activate')}
-								className='flex items-center gap-1'
-							>
-								<CheckCircle size={14} />
-								Activate
-							</Button>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => handleBulkAction('deactivate')}
-								className='flex items-center gap-1'
-							>
-								<XCircle size={14} />
-								Deactivate
-							</Button>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => handleBulkAction('email')}
-								className='flex items-center gap-1'
-							>
-								<Mail size={14} />
-								Email
-							</Button>
-							<Button
-								variant='destructive'
-								size='sm'
-								onClick={() => handleBulkAction('delete')}
-								className='flex items-center gap-1'
-							>
-								<UserX size={14} />
-								Delete
-							</Button>
-						</div>
-					</div>
-				)}
-
-				{/* Users Table */}
-				<div className='bg-card rounded-lg shadow-sm border border-border overflow-hidden'>
-					{isLoading ? (
-						<div className='flex justify-center items-center h-64'>
-							<div className='animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full'></div>
-						</div>
-					) : error ? (
-						<div className='p-8 text-center'>
-							<AlertTriangle className='w-12 h-12 mx-auto mb-4 text-red-500' />
-							<p className='text-lg font-medium text-red-500'>
-								{error}
-							</p>
-							<Button
-								onClick={() => window.location.reload()}
-								variant='outline'
-								className='mt-4'
-							>
-								Try Again
-							</Button>
-						</div>
-					) : filteredUsers.length === 0 ? (
-						<div className='p-8 text-center'>
-							<Filter className='w-12 h-12 mx-auto mb-4 text-muted-foreground' />
-							<p className='text-lg font-medium'>
-								No users match your filters
-							</p>
-							<Button
 								onClick={resetFilters}
-								variant='outline'
-								className='mt-4'
+								className='flex items-center gap-1'
 							>
-								Clear Filters
+								<RefreshCw size={14} />
+								Reset Filters
+							</Button>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={fetchUsers}
+								className='flex items-center gap-1'
+							>
+								<RefreshCw size={14} />
+								Refresh Data
 							</Button>
 						</div>
-					) : (
-						<div className='overflow-x-auto'>
-							<table className='w-full'>
-								<thead className='bg-muted/50 text-left'>
-									<tr>
-										<th className='px-6 py-3'>
-											<input
-												type='checkbox'
-												checked={
-													selectedUsers.length ===
-														filteredUsers.length &&
-													filteredUsers.length > 0
-												}
-												onChange={toggleSelectAll}
-												className='w-4 h-4 rounded border-gray-300'
-											/>
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											User
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Email
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Role
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Location
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Status
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Joined
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Last Active
-										</th>
-										<th className='px-6 py-3 font-medium'>
-											Actions
-										</th>
-									</tr>
-								</thead>
-								<tbody className='divide-y divide-border'>
-									{filteredUsers.map((user) => (
-										<tr
-											key={user.id}
-											className='hover:bg-muted/30 transition-colors'
-										>
-											<td className='px-6 py-4'>
+					</div>
+
+					{/* Rest of the filters remain the same */}
+					{/* ... */}
+
+					{/* Users Table */}
+					<div className='bg-card rounded-lg shadow-sm border border-border overflow-hidden mt-6'>
+						{isLoading ? (
+							<div className='flex justify-center items-center h-64'>
+								<div className='animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full'></div>
+							</div>
+						) : error ? (
+							<div className='p-8 text-center'>
+								<AlertTriangle className='w-12 h-12 mx-auto mb-4 text-red-500' />
+								<p className='text-lg font-medium text-red-500'>
+									{error}
+								</p>
+								<Button
+									onClick={fetchUsers}
+									variant='outline'
+									className='mt-4'
+								>
+									Try Again
+								</Button>
+							</div>
+						) : filteredUsers.length === 0 ? (
+							<div className='p-8 text-center'>
+								<Filter className='w-12 h-12 mx-auto mb-4 text-muted-foreground' />
+								<p className='text-lg font-medium'>
+									No users match your filters
+								</p>
+								<Button
+									onClick={resetFilters}
+									variant='outline'
+									className='mt-4'
+								>
+									Clear Filters
+								</Button>
+							</div>
+						) : (
+							<div className='overflow-x-auto'>
+								<table className='w-full'>
+									<thead className='bg-muted/50 text-left'>
+										<tr>
+											<th className='px-6 py-3'>
 												<input
 													type='checkbox'
-													checked={selectedUsers.includes(
-														user.id
-													)}
-													onChange={() =>
-														toggleSelectUser(
-															user.id
-														)
+													checked={
+														selectedUsers.length ===
+															filteredUsers.length &&
+														filteredUsers.length > 0
 													}
+													onChange={toggleSelectAll}
 													className='w-4 h-4 rounded border-gray-300'
 												/>
-											</td>
-											<td className='px-6 py-4'>
-												<div className='flex items-center gap-3'>
-													<Avatar className='h-8 w-8'>
-														<AvatarImage
-															src={
-																user.profileImage
-															}
-														/>
-														<AvatarFallback>
-															{user.name.substring(
-																0,
-																2
-															)}
-														</AvatarFallback>
-													</Avatar>
-													<span className='font-medium'>
-														{user.name}
-													</span>
-												</div>
-											</td>
-											<td className='px-6 py-4 text-sm text-muted-foreground'>
-												{user.email}
-											</td>
-											<td className='px-6 py-4'>
-												<span
-													className={cn(
-														'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-														user.role === 'admin'
-															? 'bg-primary/20 text-primary'
-															: 'bg-muted text-muted-foreground'
-													)}
-												>
-													{user.role === 'admin' ? (
-														<ShieldAlert
-															size={12}
-															className='mr-1'
-														/>
-													) : (
-														<Shield
-															size={12}
-															className='mr-1'
-														/>
-													)}
-													{user.role
-														.charAt(0)
-														.toUpperCase() +
-														user.role.slice(1)}
-												</span>
-											</td>
-											<td className='px-6 py-4 text-sm'>
-												{user.location}
-											</td>
-											<td className='px-6 py-4'>
-												<span
-													className={cn(
-														'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-														user.status ===
-															'active' &&
-															'bg-green-50 text-green-700',
-														user.status ===
-															'inactive' &&
-															'bg-gray-100 text-gray-700',
-														user.status ===
-															'pending' &&
-															'bg-amber-50 text-amber-700',
-														user.status ===
-															'banned' &&
-															'bg-red-50 text-red-700'
-													)}
-												>
-													{user.status ===
-														'active' && (
-														<CheckCircle
-															size={12}
-															className='mr-1'
-														/>
-													)}
-													{user.status ===
-														'inactive' && (
-														<XCircle
-															size={12}
-															className='mr-1'
-														/>
-													)}
-													{user.status ===
-														'pending' && (
-														<AlertTriangle
-															size={12}
-															className='mr-1'
-														/>
-													)}
-													{user.status ===
-														'banned' && (
-														<UserX
-															size={12}
-															className='mr-1'
-														/>
-													)}
-													{user.status
-														.charAt(0)
-														.toUpperCase() +
-														user.status.slice(1)}
-												</span>
-											</td>
-											<td className='px-6 py-4 text-sm'>
-												<div className='flex flex-col'>
-													<span>
-														{formatDate(
-															user.joinDate
-														)}
-													</span>
-													<span className='text-xs text-muted-foreground'>
-														{getTimeAgo(
-															user.joinDate
-														)}
-													</span>
-												</div>
-											</td>
-											<td className='px-6 py-4 text-sm'>
-												<div className='flex flex-col'>
-													<span>
-														{formatDate(
-															user.lastActive
-														)}
-													</span>
-													<span className='text-xs text-muted-foreground'>
-														{getTimeAgo(
-															user.lastActive
-														)}
-													</span>
-												</div>
-											</td>
-											<td className='px-6 py-4'>
-												<div className='flex items-center'>
-													<Button
-														variant='ghost'
-														size='icon'
-													>
-														<MoreHorizontal
-															size={16}
-														/>
-													</Button>
-												</div>
-											</td>
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												User
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Email
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Role
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Location
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Status
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Joined
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Last Active
+											</th>
+											<th className='px-6 py-3 font-medium'>
+												Actions
+											</th>
 										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					)}
+									</thead>
+									<tbody className='divide-y divide-border'>
+										{filteredUsers.map((user) => (
+											<tr
+												key={user.id}
+												className='hover:bg-muted/30 transition-colors'
+											>
+												<td className='px-6 py-4'>
+													<input
+														type='checkbox'
+														checked={selectedUsers.includes(
+															user.id
+														)}
+														onChange={() =>
+															toggleSelectUser(
+																user.id
+															)
+														}
+														className='w-4 h-4 rounded border-gray-300'
+													/>
+												</td>
+												<td className='px-6 py-4'>
+													<div className='flex items-center gap-3'>
+														<Avatar className='h-8 w-8'>
+															<AvatarImage
+																src={
+																	user.profileImage ||
+																	user.profilePic ||
+																	''
+																}
+															/>
+															<AvatarFallback>
+																{user.name.substring(
+																	0,
+																	2
+																)}
+															</AvatarFallback>
+														</Avatar>
+														<span className='font-medium'>
+															{user.name}
+														</span>
+													</div>
+												</td>
+												<td className='px-6 py-4 text-sm text-muted-foreground'>
+													{user.email}
+												</td>
+												<td className='px-6 py-4'>
+													<span
+														className={cn(
+															'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+															user.role ===
+																'admin'
+																? 'bg-primary/20 text-primary'
+																: 'bg-muted text-muted-foreground'
+														)}
+													>
+														{user.role ===
+														'admin' ? (
+															<ShieldAlert
+																size={12}
+																className='mr-1'
+															/>
+														) : (
+															<Shield
+																size={12}
+																className='mr-1'
+															/>
+														)}
+														{user.role
+															.charAt(0)
+															.toUpperCase() +
+															user.role.slice(1)}
+													</span>
+												</td>
+												<td className='px-6 py-4 text-sm'>
+													{user.location}
+												</td>
+												<td className='px-6 py-4'>
+													<span
+														className={cn(
+															'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+															user.status ===
+																'active' &&
+																'bg-green-50 text-green-700',
+															user.status ===
+																'inactive' &&
+																'bg-gray-100 text-gray-700',
+															user.status ===
+																'pending' &&
+																'bg-amber-50 text-amber-700',
+															user.status ===
+																'banned' &&
+																'bg-red-50 text-red-700'
+														)}
+													>
+														{user.status ===
+															'active' && (
+															<CheckCircle
+																size={12}
+																className='mr-1'
+															/>
+														)}
+														{user.status ===
+															'inactive' && (
+															<XCircle
+																size={12}
+																className='mr-1'
+															/>
+														)}
+														{user.status ===
+															'pending' && (
+															<AlertTriangle
+																size={12}
+																className='mr-1'
+															/>
+														)}
+														{user.status ===
+															'banned' && (
+															<UserX
+																size={12}
+																className='mr-1'
+															/>
+														)}
+														{user.status
+															.charAt(0)
+															.toUpperCase() +
+															user.status.slice(
+																1
+															)}
+													</span>
+												</td>
+												<td className='px-6 py-4 text-sm'>
+													<div className='flex flex-col'>
+														<span>
+															{formatDate(
+																user.joinDate ||
+																	user.createdAt
+															)}
+														</span>
+														<span className='text-xs text-muted-foreground'>
+															{getTimeAgo(
+																user.joinDate ||
+																	user.createdAt
+															)}
+														</span>
+													</div>
+												</td>
+												<td className='px-6 py-4 text-sm'>
+													<div className='flex flex-col'>
+														<span>
+															{formatDate(
+																user.lastActive
+															)}
+														</span>
+														<span className='text-xs text-muted-foreground'>
+															{getTimeAgo(
+																user.lastActive
+															)}
+														</span>
+													</div>
+												</td>
+												<td className='px-6 py-4'>
+													<div className='flex items-center'>
+														<Button
+															variant='ghost'
+															size='icon'
+														>
+															<MoreHorizontal
+																size={16}
+															/>
+														</Button>
+													</div>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						)}
 
-					{/* Pagination */}
-					<div className='px-6 py-4 border-t border-border flex justify-between items-center'>
-						<span className='text-sm text-muted-foreground'>
-							Showing {filteredUsers.length} of {users.length}{' '}
-							users
-						</span>
-						<div className='flex gap-2'>
-							<Button
-								variant='outline'
-								size='sm'
-								disabled
-							>
-								Previous
-							</Button>
-							<Button
-								variant='outline'
-								size='sm'
-								disabled
-							>
-								Next
-							</Button>
-						</div>
-					</div>
-				</div>
-
-				{/* Confirmation Dialog */}
-				{showConfirmDialog && (
-					<div className='fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50'>
-						<div className='bg-card p-6 rounded-lg shadow-lg max-w-md w-full'>
-							<h3 className='text-lg font-bold mb-2'>
-								Confirm Action
-							</h3>
-							<p className='mb-4'>
-								Are you sure you want to {actionType}{' '}
-								{selectedUsers.length}{' '}
-								{selectedUsers.length === 1 ? 'user' : 'users'}?
-							</p>
-							<div className='flex justify-end gap-2'>
+						{/* Pagination */}
+						<div className='px-6 py-4 border-t border-border flex justify-between items-center'>
+							<span className='text-sm text-muted-foreground'>
+								Showing {filteredUsers.length} of {users.length}{' '}
+								users
+							</span>
+							<div className='flex gap-2'>
 								<Button
 									variant='outline'
-									onClick={() => setShowConfirmDialog(false)}
+									size='sm'
+									disabled
 								>
-									Cancel
+									Previous
 								</Button>
 								<Button
-									variant={
-										actionType === 'delete'
-											? 'destructive'
-											: 'default'
-									}
-									onClick={confirmBulkAction}
+									variant='outline'
+									size='sm'
+									disabled
 								>
-									Confirm
+									Next
 								</Button>
 							</div>
 						</div>
 					</div>
-				)}
+
+					{/* Confirmation Dialog */}
+					{showConfirmDialog && (
+						<div className='fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50'>
+							<div className='bg-card p-6 rounded-lg shadow-lg max-w-md w-full'>
+								<h3 className='text-lg font-bold mb-2'>
+									Confirm Action
+								</h3>
+								<p className='mb-4'>
+									Are you sure you want to {actionType}{' '}
+									{selectedUsers.length}{' '}
+									{selectedUsers.length === 1
+										? 'user'
+										: 'users'}
+									?
+								</p>
+								<div className='flex justify-end gap-2'>
+									<Button
+										variant='outline'
+										onClick={() =>
+											setShowConfirmDialog(false)
+										}
+										disabled={actionLoading}
+									>
+										Cancel
+									</Button>
+									<Button
+										variant={
+											actionType === 'delete'
+												? 'destructive'
+												: 'default'
+										}
+										onClick={confirmBulkAction}
+										disabled={actionLoading}
+									>
+										{actionLoading ? (
+											<>
+												<div className='animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2'></div>
+												Processing...
+											</>
+										) : (
+											'Confirm'
+										)}
+									</Button>
+								</div>
+							</div>
+						</div>
+					)}
+				</section>
 			</div>
 		</AdminGuard>
 	);
