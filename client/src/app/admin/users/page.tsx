@@ -30,7 +30,8 @@ type SortField =
 	| 'location'
 	| 'status'
 	| 'joinDate'
-	| 'lastActive';
+	| 'lastActive'
+	| 'createdAt'; // Add this to fix the type error
 type SortOrder = 'asc' | 'desc';
 
 interface User {
