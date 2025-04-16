@@ -19,6 +19,7 @@ export interface User {
 	role: UserRole;
 	location: string;
 	status: UserStatus;
+	lastLogin?: string; // Added this field to match the auth.ts User interface
 	lastActive: string | null;
 	joinDate?: string;
 	createdAt?: string;
