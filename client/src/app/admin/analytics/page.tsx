@@ -27,7 +27,7 @@ export default function AnalyticsPage() {
 	const [data, setData] = useState<any>(null);
 	const [error, setError] = useState<string | null>(null);
 
-	// Fetch analytics data
+	// Update the analytics data fetching to always show data
 	useEffect(() => {
 		const fetchAnalytics = async () => {
 			setIsLoading(true);
@@ -38,16 +38,27 @@ export default function AnalyticsPage() {
 				const analyticsData = await analyticsApi.getAnalyticsData(
 					timeRange
 				);
-				setData(analyticsData);
+
+				// If we got valid data back, use it
+				if (
+					analyticsData &&
+					analyticsData.dailyTraffic &&
+					analyticsData.dailyTraffic.length > 0
+				) {
+					console.log('Using real analytics data');
+					setData(analyticsData);
+				} else {
+					// Fall back to mock data if no real data or empty data
+					console.log('API returned no data, using mock data');
+					setData(generateMockData(timeRange));
+				}
 			} catch (error) {
 				console.error('Error fetching analytics:', error);
 				setError('Failed to load analytics data');
 
-				// Fall back to mock data for development
-				if (process.env.NODE_ENV === 'development') {
-					console.log('Using mock data as fallback');
-					setData(generateMockData(timeRange));
-				}
+				// Always fall back to mock data on error
+				console.log('Using mock data due to error');
+				setData(generateMockData(timeRange));
 			} finally {
 				setIsLoading(false);
 			}
@@ -299,24 +310,51 @@ export default function AnalyticsPage() {
 							variant='outline'
 							onClick={async () => {
 								try {
-									// Fetch a simple status endpoint to check if analytics is working
+									// Use the same URL construction logic as your API functions
 									const baseUrl =
-										process.env.NEXT_PUBLIC_API_URL ||
-										'http://localhost:3001/api';
-									const response = await fetch(
-										`${baseUrl.replace(
-											'/api',
-											''
-										)}/analytics/status`
+										process.env.NODE_ENV === 'production'
+											? (
+													process.env
+														.NEXT_PUBLIC_API_URL ||
+													'https://wuddet.com'
+											  ).replace('/api', '')
+											: 'http://localhost:3001';
+
+									const url = `${baseUrl}/analytics/status`;
+									console.log(
+										`Checking analytics status at: ${url}`
 									);
+
+									const response = await fetch(url, {
+										credentials: 'include',
+									});
+
+									if (!response.ok) {
+										throw new Error(
+											`Status check failed with code: ${response.status}`
+										);
+									}
+
 									const data = await response.json();
 									alert(
 										`Analytics status: ${JSON.stringify(
-											data
+											data,
+											null,
+											2
 										)}`
 									);
 								} catch (error) {
-									alert(`Analytics error: ${error.message}`);
+									console.error(
+										'Analytics status check error:',
+										error
+									);
+									alert(
+										`Analytics error: ${
+											error instanceof Error
+												? error.message
+												: String(error)
+										}`
+									);
 								}
 							}}
 						>

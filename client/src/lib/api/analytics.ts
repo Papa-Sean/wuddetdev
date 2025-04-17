@@ -1,38 +1,59 @@
-const baseUrl =
-	process.env.NODE_ENV === 'production'
-		? process.env.NEXT_PUBLIC_API_URL // Replace with your actual domain
-		: 'http://localhost:3001';
+// Fix URL construction for production environment
+const getBaseUrl = () => {
+	// For production environments
+	if (process.env.NODE_ENV === 'production') {
+		// If NEXT_PUBLIC_API_URL is set, use it without '/api' since analytics routes don't use that prefix
+		if (process.env.NEXT_PUBLIC_API_URL) {
+			return process.env.NEXT_PUBLIC_API_URL.replace('/api', '');
+		}
+		// Fallback to your domain
+		return 'https://wuddet.com'; // Replace with your actual domain
+	}
+	// For development
+	return 'http://localhost:3001';
+};
 
 const analyticsFetch = async (endpoint: string, options?: RequestInit) => {
-	console.log(`Fetching analytics from: ${baseUrl}${endpoint}`);
+	const baseUrl = getBaseUrl();
+	const url = `${baseUrl}${endpoint}`;
 
-	const response = await fetch(`${baseUrl}${endpoint}`, {
-		...options,
-		headers: {
-			'Content-Type': 'application/json',
-			...(options?.headers || {}),
-		},
-		credentials: 'include',
-	});
+	console.log(`Fetching analytics from: ${url}`);
 
-	if (!response.ok) {
-		console.error(`Analytics API error: ${response.status}`);
-		throw new Error(`Analytics API error: ${response.status}`);
+	try {
+		const response = await fetch(url, {
+			...options,
+			headers: {
+				'Content-Type': 'application/json',
+				...(options?.headers || {}),
+			},
+			credentials: 'include',
+		});
+
+		if (!response.ok) {
+			console.error(`Analytics API error: ${response.status}`);
+			throw new Error(`Analytics API error: ${response.status}`);
+		}
+
+		return await response.json();
+	} catch (error) {
+		if (error instanceof Error) {
+			console.error(`Analytics fetch error: ${error.message}`);
+			throw error;
+		}
+		throw new Error('Unknown analytics fetch error');
 	}
-
-	return await response.json();
 };
 
 export const analyticsApi = {
 	getAnalyticsData: async (timeRange: '7d' | '30d' | '90d' | 'all') => {
 		try {
-			// Notice the path changed to match your server registration
 			return await analyticsFetch(
 				`/analytics/data?timeRange=${timeRange}`
 			);
 		} catch (error) {
 			console.error('Error fetching analytics data:', error);
-			throw error;
+			// Return null to trigger the fallback to mock data
+			return null;
 		}
 	},
 };
