@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Inbox, MessageSquare } from 'lucide-react';
+import { FileText, Inbox, MessageSquare, Layers } from 'lucide-react';
 import { FilterType } from '@/lib/api/content';
 
-type ContentTab = 'posts' | 'projects' | 'comments';
+// Update the type to include 'all'
+type ContentTab = 'posts' | 'projects' | 'comments' | 'all';
 
 interface SearchAndFilterBarProps {
 	activeTab: ContentTab;
@@ -54,7 +55,7 @@ export function SearchAndFilterBar({
 					onValueChange={(value) => handleTabChange(value)}
 					className='w-full md:max-w-md'
 				>
-					<TabsList className='grid w-full grid-cols-3'>
+					<TabsList className='grid w-full grid-cols-4'>
 						<TabsTrigger
 							value='posts'
 							className='flex gap-1 sm:gap-2 items-center px-2 sm:px-4'
@@ -92,6 +93,21 @@ export function SearchAndFilterBar({
 							<span className='text-xs sm:text-sm'>Comments</span>
 							<span className='bg-muted text-xs rounded-full px-1.5 py-0.5 ml-1'>
 								{tabCounts.comments}
+							</span>
+						</TabsTrigger>
+						<TabsTrigger
+							value='all'
+							className='flex gap-1 sm:gap-2 items-center px-2 sm:px-4'
+						>
+							<Layers
+								size={14}
+								className='md:size-4'
+							/>
+							<span className='text-xs sm:text-sm'>All</span>
+							<span className='bg-muted text-xs rounded-full px-1.5 py-0.5 ml-1'>
+								{tabCounts.posts +
+									tabCounts.projects +
+									tabCounts.comments}
 							</span>
 						</TabsTrigger>
 					</TabsList>

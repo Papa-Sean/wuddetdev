@@ -3,7 +3,7 @@ import { AlertTriangle } from 'lucide-react';
 
 export interface ErrorStateProps {
 	message: string;
-	onRetry?: () => void; // Make this prop optional with a question mark
+	onRetry?: () => void; // Add this optional property
 }
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
