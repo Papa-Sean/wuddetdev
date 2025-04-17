@@ -1,11 +1,8 @@
 export const trackPageView = (page: string) => {
-	// Add logging to debug URL construction in production
-	console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-
-	// Simplify URL construction to avoid manipulation errors
+	// Get the root URL for the site in production, use API URL for development
 	const baseUrl =
 		process.env.NODE_ENV === 'production'
-			? process.env.NEXT_PUBLIC_API_URL // Replace with your actual domain
+			? window.location.origin // Gets the root domain (e.g. https://wuddet.com)
 			: 'http://localhost:3001';
 
 	const analyticsUrl = `${baseUrl}/analytics/pageview`;

@@ -1,13 +1,8 @@
 // Fix URL construction for production environment
 const getBaseUrl = () => {
-	// For production environments
+	// For production environments, use the site's root URL
 	if (process.env.NODE_ENV === 'production') {
-		// If NEXT_PUBLIC_API_URL is set, use it without '/api' since analytics routes don't use that prefix
-		if (process.env.NEXT_PUBLIC_API_URL) {
-			return process.env.NEXT_PUBLIC_API_URL.replace('/api', '');
-		}
-		// Fallback to your domain
-		return 'https://wuddet.com'; // Replace with your actual domain
+		return typeof window !== 'undefined' ? window.location.origin : '';
 	}
 	// For development
 	return 'http://localhost:3001';
