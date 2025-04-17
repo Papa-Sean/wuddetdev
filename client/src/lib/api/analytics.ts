@@ -1,6 +1,6 @@
 const baseUrl =
 	process.env.NODE_ENV === 'production'
-		? 'https://wuddetdev.com' // Replace with your actual domain
+		? 'https://www.wuddetdev.com/api' // Replace with your actual domain
 		: 'http://localhost:3001';
 
 const analyticsFetch = async (endpoint: string, options?: RequestInit) => {
