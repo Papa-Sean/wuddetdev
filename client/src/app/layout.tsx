@@ -4,6 +4,9 @@ import { AuthProvider } from '@/context/AuthContext';
 import { BackgroundDecoration } from '@/components/layout/BackgroundDecoration';
 import { Header } from '@/components/layout/Header/Header';
 import { Footer } from '@/components/layout/Footer/Footer';
+import { trackPageView } from '@/lib/analytics/tracker';
+import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import '@/styles/mid-century-patterns.css';
 import './globals.css';
 
@@ -66,7 +69,11 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gradient-to-t from-primary/10 to-secondary/10`}
 			>
+				{/* Add Google Analytics with your measurement ID */}
+				<GoogleAnalytics gaId='G-YR80C8ZDM0' />
+
 				<AuthProvider>
+					<AnalyticsTracker />
 					<BackgroundDecoration />
 					<Header />
 					<main className='flex-1 relative'>{children}</main>

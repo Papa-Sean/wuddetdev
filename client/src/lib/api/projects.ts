@@ -66,8 +66,20 @@ export const projectsApi = {
 					project.image ||
 					`/portfolio/project${
 						Math.floor(Math.random() * 6) + 1
-					}.jpg`, // Generate random placeholder
-				creator: project.creator?.name || 'Admin',
+					}.jpg`,
+				creator: 'Admin', // Default value instead of accessing nested property
+				// Use optional chaining to safely access nested properties
+				author: {
+					name:
+						project.author?.name ||
+						project.creator?.name ||
+						'Unknown',
+					id: (
+						project.author?._id ||
+						project.creator?._id ||
+						'unknown-id'
+					).toString(),
+				},
 			}));
 		} catch (error) {
 			console.error('Get projects error:', error);

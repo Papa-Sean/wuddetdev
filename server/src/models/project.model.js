@@ -10,42 +10,33 @@ const projectSchema = new mongoose.Schema(
 		description: {
 			type: String,
 			required: true,
-			trim: true,
 		},
-		technologies: [
-			{
-				type: String,
-				trim: true,
-			},
-		],
-		liveUrl: {
-			type: String,
-			trim: true,
+		techStack: {
+			type: [String],
+			default: [],
 		},
-		repoUrl: {
-			type: String,
-			trim: true,
-		},
-		imageUrl: {
+		prototypeUrl: {
 			type: String,
 		},
-		author: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'User',
-			required: true,
+		image: {
+			type: String,
 		},
 		featured: {
 			type: Boolean,
 			default: false,
 		},
-		createdAt: {
-			type: Date,
-			default: Date.now,
+		// Update this field to properly reference the User model
+		author: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+		},
+		// Add this field as an alias for 'author' for backward compatibility
+		creator: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
 		},
 	},
-	{
-		timestamps: true,
-	}
+	{ timestamps: true }
 );
 
 const Project = mongoose.model('Project', projectSchema);

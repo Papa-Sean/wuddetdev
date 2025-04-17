@@ -14,7 +14,7 @@ const contactRoutes = require('./routes/contact.routes');
 const adminRoutes = require('./routes/admin.routes');
 const statsRoutes = require('./routes/stats.routes');
 const contentRoutes = require('./routes/content.routes'); // Add this line
-
+const analyticsRoutes = require('./routes/analytics.routes');
 
 // Create Express app
 const app = express();
@@ -65,8 +65,7 @@ app.use(`${config.server.apiPrefix}/contact`, contactRoutes);
 app.use(`${config.server.apiPrefix}/admin`, adminRoutes);
 app.use(`${config.server.apiPrefix}/stats`, statsRoutes);
 app.use(`${config.server.apiPrefix}/content`, contentRoutes); // Add this line
-
-
+app.use('/analytics', analyticsRoutes); // No prefix for analytics routes
 // Health check endpoint
 app.get(`${config.server.apiPrefix}/health`, (req, res) => {
 	res.status(200).json({ status: 'ok', environment: config.server.nodeEnv });
