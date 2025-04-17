@@ -60,6 +60,16 @@ router.post('/pageview', async (req, res) => {
 	}
 });
 
+// Add this route for status check
+router.get('/status', (req, res) => {
+	res.json({
+		status: 'ok',
+		timestamp: new Date().toISOString(),
+		env: process.env.NODE_ENV,
+		visits_collection_exists: Boolean(Visit),
+	});
+});
+
 // Helper function to detect device type
 function detectDeviceType(userAgent, screenWidth) {
 	if (/mobile|android|iphone/i.test(userAgent)) {

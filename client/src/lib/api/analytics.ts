@@ -1,7 +1,12 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const baseUrl =
+	process.env.NODE_ENV === 'production'
+		? 'https://wuddetdev.com' // Replace with your actual domain
+		: 'http://localhost:3001';
 
 const analyticsFetch = async (endpoint: string, options?: RequestInit) => {
-	const response = await fetch(`${API_URL.replace('/api', '')}${endpoint}`, {
+	console.log(`Fetching analytics from: ${baseUrl}${endpoint}`);
+
+	const response = await fetch(`${baseUrl}${endpoint}`, {
 		...options,
 		headers: {
 			'Content-Type': 'application/json',
@@ -11,6 +16,7 @@ const analyticsFetch = async (endpoint: string, options?: RequestInit) => {
 	});
 
 	if (!response.ok) {
+		console.error(`Analytics API error: ${response.status}`);
 		throw new Error(`Analytics API error: ${response.status}`);
 	}
 

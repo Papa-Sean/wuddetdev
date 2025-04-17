@@ -1,10 +1,16 @@
 export const trackPageView = (page: string) => {
-	// Get the API URL from environment variable or use default
-	const API_URL =
-		process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+	// Add logging to debug URL construction in production
+	console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
 
-	// Use the correct URL - remove '/api' from the path since analytics routes don't have it
-	const analyticsUrl = `${API_URL.replace('/api', '')}/analytics/pageview`;
+	// Simplify URL construction to avoid manipulation errors
+	const baseUrl =
+		process.env.NODE_ENV === 'production'
+			? 'https://wuddetdev.com' // Replace with your actual domain
+			: 'http://localhost:3001';
+
+	const analyticsUrl = `${baseUrl}/analytics/pageview`;
+
+	console.log('Sending analytics to:', analyticsUrl);
 
 	fetch(analyticsUrl, {
 		method: 'POST',

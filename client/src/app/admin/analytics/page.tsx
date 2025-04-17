@@ -294,6 +294,34 @@ export default function AnalyticsPage() {
 							<RefreshCcw size={14} />
 							Refresh
 						</Button>
+
+						<Button
+							variant='outline'
+							onClick={async () => {
+								try {
+									// Fetch a simple status endpoint to check if analytics is working
+									const baseUrl =
+										process.env.NEXT_PUBLIC_API_URL ||
+										'http://localhost:3001/api';
+									const response = await fetch(
+										`${baseUrl.replace(
+											'/api',
+											''
+										)}/analytics/status`
+									);
+									const data = await response.json();
+									alert(
+										`Analytics status: ${JSON.stringify(
+											data
+										)}`
+									);
+								} catch (error) {
+									alert(`Analytics error: ${error.message}`);
+								}
+							}}
+						>
+							Check Analytics Status
+						</Button>
 					</div>
 				</div>
 
@@ -548,37 +576,35 @@ export default function AnalyticsPage() {
 												</tr>
 											</thead>
 											<tbody>
-												{data.topPages
-													.slice(0, 5)
-													.map(
-														(
-															page: {
-																page: string;
-																views: number;
-															},
-															i: number
-														) => (
-															<tr
-																key={i}
-																className='border-b border-border/50 last:border-0'
-															>
-																<td className='py-3'>
-																	/
-																	{page.page
-																		.toLowerCase()
-																		.replace(
-																			/\s+/g,
-																			'-'
-																		)}
-																</td>
-																<td className='py-3'>
-																	{formatNumber(
-																		page.views
+												{data.topPages.slice(0, 5).map(
+													(
+														page: {
+															page: string;
+															views: number;
+														},
+														i: number
+													) => (
+														<tr
+															key={i}
+															className='border-b border-border/50 last:border-0'
+														>
+															<td className='py-3'>
+																/
+																{page.page
+																	.toLowerCase()
+																	.replace(
+																		/\s+/g,
+																		'-'
 																	)}
-																</td>
-															</tr>
-														)
-													)}
+															</td>
+															<td className='py-3'>
+																{formatNumber(
+																	page.views
+																)}
+															</td>
+														</tr>
+													)
+												)}
 											</tbody>
 										</table>
 									</div>
