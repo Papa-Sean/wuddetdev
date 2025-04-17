@@ -5,8 +5,8 @@
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"prebuild": "node prebuild.js",
-		"build": "npm run prebuild && tsc --project tsconfig.build.json && next build",
-		"postbuild": "node -e \"require('fs').existsSync('./src/app/api_temp') && require('fs').renameSync('./src/app/api_temp', './src/app/api')\"",
+		"build": "cross-env NODE_ENV=production next build",
+		"postbuild": "node -e \"require('fs').existsSync('./.skip-api-routes') && require('fs').unlinkSync('./.skip-api-routes')\"",
 		"start": "next start",
 		"lint": "next lint"
 	},
@@ -32,6 +32,7 @@
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
+		"cross-env": "^7.0.3",
 		"eslint": "^9",
 		"eslint-config-next": "15.3.0",
 		"tailwindcss": "^4",
