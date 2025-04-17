@@ -12,23 +12,31 @@ const projectSchema = new mongoose.Schema(
 			required: true,
 			trim: true,
 		},
-		techStack: [
+		technologies: [
 			{
 				type: String,
 				trim: true,
 			},
 		],
-		prototypeUrl: {
+		liveUrl: {
 			type: String,
 			trim: true,
 		},
-		image: {
+		repoUrl: {
+			type: String,
+			trim: true,
+		},
+		imageUrl: {
 			type: String,
 		},
-		creator: {
+		author: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true,
+		},
+		featured: {
+			type: Boolean,
+			default: false,
 		},
 		createdAt: {
 			type: Date,

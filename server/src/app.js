@@ -13,6 +13,8 @@ const postRoutes = require('./routes/post.routes');
 const contactRoutes = require('./routes/contact.routes');
 const adminRoutes = require('./routes/admin.routes');
 const statsRoutes = require('./routes/stats.routes');
+const contentRoutes = require('./routes/content.routes'); // Add this line
+
 
 // Create Express app
 const app = express();
@@ -62,6 +64,8 @@ app.use(`${config.server.apiPrefix}/posts`, postRoutes);
 app.use(`${config.server.apiPrefix}/contact`, contactRoutes);
 app.use(`${config.server.apiPrefix}/admin`, adminRoutes);
 app.use(`${config.server.apiPrefix}/stats`, statsRoutes);
+app.use(`${config.server.apiPrefix}/content`, contentRoutes); // Add this line
+
 
 // Health check endpoint
 app.get(`${config.server.apiPrefix}/health`, (req, res) => {
