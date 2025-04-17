@@ -33,6 +33,16 @@ const config = [
 			'react/react-in-jsx-scope': 'off',
 		},
 	},
+	{
+		plugins: {
+			'@next/next': nextPlugin,
+		},
+		// Add Next.js specific rules
+		rules: {
+			'@next/next/no-html-link-for-pages': 'error',
+			'@next/next/no-img-element': 'warn',
+		},
+	},
 ];
 
 export default config;
