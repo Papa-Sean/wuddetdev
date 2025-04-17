@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Inbox, MessageSquare } from 'lucide-react';
+import { FilterType } from '@/lib/api/content';
 
 type ContentTab = 'posts' | 'projects' | 'comments';
-type FilterType = 'all' | 'pinned' | 'featured' | 'flagged';
 
 interface SearchAndFilterBarProps {
 	activeTab: ContentTab;
@@ -12,7 +12,7 @@ interface SearchAndFilterBarProps {
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	filter: FilterType;
-	setFilter: (filter: FilterType) => void;
+	setFilter: React.Dispatch<React.SetStateAction<FilterType>>;
 	postsCount: number;
 	projectsCount: number;
 	commentsCount: number;
@@ -120,7 +120,7 @@ export function SearchAndFilterBar({
 				>
 					All
 				</Button>
-				
+
 				{activeTab === 'posts' && (
 					<Button
 						variant={filter === 'pinned' ? 'default' : 'outline'}

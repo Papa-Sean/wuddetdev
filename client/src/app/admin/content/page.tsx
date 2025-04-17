@@ -9,6 +9,7 @@ import {
 	ContentProject,
 	ContentComment,
 	ContentItemType,
+	FilterType, // Import this type
 } from '@/lib/api/content';
 import { Button } from '@/components/ui/button';
 import { LayoutGrid, LayoutList, RefreshCcw } from 'lucide-react';
@@ -22,8 +23,7 @@ import { CommentsTable } from './components/CommentsTable'; // Fixed import path
 import { ConfirmationDialog } from './components/ConfirmationDialog';
 
 // Types
-type ContentTab = 'posts' | 'projects' | 'comments';
-type FilterType = 'all' | 'recent' | 'pinned' | 'featured';
+type ContentTab = 'posts' | 'projects' | 'comments' | 'all'; // Added 'all'
 type ViewMode = 'table' | 'cards';
 
 export default function ContentManagementPage() {

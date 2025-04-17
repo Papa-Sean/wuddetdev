@@ -48,17 +48,24 @@ export interface ContentProject {
 		name: string;
 	};
 	createdAt: string;
+	updatedAt?: string; // Add this property as optional
 	featured?: boolean;
 }
 
-export type ContentItemType = 'post' | 'project' | 'comment';
-export type FilterType = 'all' | 'recent' | 'pinned' | 'featured';
+// Create a shared FilterType definition
+export type FilterType = 'all' | 'recent' | 'pinned' | 'featured' | 'flagged';
 
-interface ContentResponse {
+export type ContentItemType = 'post' | 'project' | 'comment';
+
+// Update the ContentResponse interface
+export interface ContentResponse {
 	posts: ContentPost[];
 	projects: ContentProject[];
 	comments: ContentComment[];
-	pagination: {
+	totalPosts?: number; // Add this property
+	totalProjects?: number; // Add this property
+	totalComments?: number; // Add this property
+	pagination?: {
 		posts: { total: number; page: number; limit: number };
 		projects: { total: number; page: number; limit: number };
 		comments: { total: number; page: number; limit: number };
