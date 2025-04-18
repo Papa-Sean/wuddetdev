@@ -8,8 +8,9 @@ export async function POST(request: Request) {
 		// This ensures we don't lose tracking data even if backend is temporarily unavailable
 		try {
 			// Get API URL from environment variable
-			const apiUrl =
-				process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+			const apiUrl = (
+				process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+			).replace(/\/api$/, '');
 
 			// Forward to backend
 			const response = await fetch(`${apiUrl}/analytics/pageview`, {

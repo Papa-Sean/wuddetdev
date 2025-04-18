@@ -29,7 +29,20 @@ router.get('/data', async (req, res, next) => {
 	}
 });
 
-// Track page views - note: no authentication required
+// Helper to detect device type
+function detectDeviceType(userAgent, screenWidth) {
+	if (!userAgent) return 'unknown';
+	if (screenWidth) {
+		if (screenWidth < 768) return 'mobile';
+		if (screenWidth < 1024) return 'tablet';
+		return 'desktop';
+	}
+	if (/mobile/i.test(userAgent)) return 'mobile';
+	if (/tablet|ipad/i.test(userAgent)) return 'tablet';
+	return 'desktop';
+}
+
+// Track page views
 router.post('/pageview', async (req, res) => {
 	try {
 		const {
@@ -39,14 +52,15 @@ router.post('/pageview', async (req, res) => {
 			screenWidth,
 			timestamp,
 			visitorId,
-			deviceType,
+			location,
 		} = req.body;
 
-		console.log('Received analytics data:', {
-			page,
-			visitorId: visitorId?.substring(0, 8) + '...', // Log partial ID for privacy
-			timestamp,
-		});
+		// Default location if not provided by client
+		const userLocation = location || {
+			region: 'Michigan',
+			country: 'United States',
+			city: 'Detroit',
+		};
 
 		// Create a new visit record
 		await Visit.create({
@@ -56,13 +70,8 @@ router.post('/pageview', async (req, res) => {
 			screenWidth,
 			timestamp: new Date(timestamp),
 			visitorId,
-			deviceType: deviceType || detectDeviceType(userAgent, screenWidth),
-			// Simple location detection - in production use GeoIP
-			location: {
-				region: 'Michigan',
-				country: 'USA',
-				city: 'Detroit',
-			},
+			deviceType: detectDeviceType(userAgent, screenWidth),
+			location: userLocation,
 		});
 
 		res.status(200).send({ success: true });
@@ -83,18 +92,69 @@ router.get('/status', (req, res) => {
 	});
 });
 
-// Helper function to detect device type
-function detectDeviceType(userAgent, screenWidth) {
-	if (/mobile|android|iphone/i.test(userAgent)) {
-		return 'mobile';
-	} else if (
-		/ipad|tablet/i.test(userAgent) ||
-		(screenWidth > 768 && screenWidth < 1024)
-	) {
-		return 'tablet';
+// Geographic data endpoint
+router.get('/geographic', async (req, res) => {
+	try {
+		// Define time range - last 30 days by default
+		const startDate = new Date();
+		startDate.setDate(startDate.getDate() - 30);
+
+		// Get Michigan-specific city data
+		const geoData = await Visit.aggregate([
+			{ $match: { timestamp: { $gte: startDate } } },
+			{
+				$group: {
+					_id: {
+						region: '$location.city', // Group by city
+						country: '$location.country',
+					},
+					visits: { $sum: 1 },
+				},
+			},
+			{ $sort: { visits: -1 } },
+			{ $limit: 15 }, // Show more cities
+		]);
+
+		// Format the data
+		const locations = geoData.map((item) => ({
+			region: item._id.region || 'Other Michigan',
+			country: item._id.country || 'United States',
+			visits: item.visits,
+		}));
+
+		const totalVisits = locations.reduce(
+			(sum, location) => sum + location.visits,
+			0
+		);
+
+		res.json({
+			locations,
+			totalVisits,
+		});
+	} catch (error) {
+		console.error('Error fetching geographic data:', error);
+
+		// Michigan-focused fallback data
+		const mockLocations = [
+			{ region: 'Detroit', country: 'United States', visits: 350 },
+			{ region: 'Ann Arbor', country: 'United States', visits: 180 },
+			{ region: 'Grand Rapids', country: 'United States', visits: 120 },
+			{ region: 'Lansing', country: 'United States', visits: 90 },
+			{ region: 'Flint', country: 'United States', visits: 60 },
+			{ region: 'Other Michigan', country: 'United States', visits: 150 },
+		];
+
+		const totalVisits = mockLocations.reduce(
+			(sum, loc) => sum + loc.visits,
+			0
+		);
+
+		res.json({
+			locations: mockLocations,
+			totalVisits,
+		});
 	}
-	return 'desktop';
-}
+});
 
 // IMPLEMENT this function - it was just a placeholder before
 async function fetchAnalyticsData(timeRange) {

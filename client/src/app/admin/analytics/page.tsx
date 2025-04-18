@@ -3,7 +3,6 @@
 import { AdminGuard } from '@/components/guards/AdminGuard';
 import useAnalyticsData from './hooks/useAnalyticsData';
 import { AnalyticsHeader } from './components/AnalyticsHeader';
-import { GoogleAnalyticsCard } from './components/GoogleAnalyticsCard';
 import { OverviewSection } from './components/OverviewSection';
 import { DevicesSection } from './components/DevicesSection';
 import { TopPagesSection } from './components/TopPagesSection';
@@ -20,8 +19,6 @@ export default function AnalyticsPage() {
 		setTimeRange,
 		refreshData,
 		checkStatus,
-		gaGeoData,
-		isLoadingGa,
 	} = useAnalyticsData('30d');
 
 	const handleCheckStatus = async () => {
@@ -47,8 +44,6 @@ export default function AnalyticsPage() {
 					onCheckStatus={handleCheckStatus}
 				/>
 
-				<GoogleAnalyticsCard />
-
 				{isLoading ? (
 					<LoadingSpinner />
 				) : data ? (
@@ -67,8 +62,6 @@ export default function AnalyticsPage() {
 						<GeographicSection
 							locations={data.locations}
 							totalVisits={data.totals.visits}
-							gaGeoData={gaGeoData}
-							isLoadingGa={isLoadingGa}
 						/>
 					</>
 				) : (

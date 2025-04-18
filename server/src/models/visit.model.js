@@ -1,35 +1,18 @@
 const mongoose = require('mongoose');
 
-const visitSchema = new mongoose.Schema(
-	{
-		page: String,
-		referrer: String,
-		userAgent: String,
-		screenWidth: Number,
-		timestamp: {
-			type: Date,
-			default: Date.now,
-		},
-		visitorId: String,
-		userId: mongoose.Schema.Types.ObjectId,
-		deviceType: {
-			type: String,
-			enum: ['desktop', 'mobile', 'tablet'],
-			default: 'desktop',
-		},
-		location: {
-			region: String,
-			country: String,
-			city: String,
-		},
-		pageViews: {
-			type: Number,
-			default: 1,
-		},
+const visitSchema = new mongoose.Schema({
+	page: { type: String, required: true },
+	visitorId: { type: String, required: true },
+	timestamp: { type: Date, default: Date.now },
+	referrer: { type: String },
+	userAgent: { type: String },
+	screenWidth: { type: Number },
+	deviceType: { type: String, enum: ['desktop', 'mobile', 'tablet'] },
+	location: {
+		country: { type: String, default: 'United States' },
+		region: { type: String, default: 'Michigan' },
+		city: { type: String, default: 'Detroit' },
 	},
-	{ timestamps: true }
-);
+});
 
-const Visit = mongoose.model('Visit', visitSchema);
-
-module.exports = Visit;
+module.exports = mongoose.model('Visit', visitSchema);
